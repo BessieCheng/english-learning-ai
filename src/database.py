@@ -129,6 +129,14 @@ def init_database():
         """)
         cursor.execute("DROP TABLE vocabulary_old")
 
+    # 清除重複單字（保留最早那筆）
+    cursor.execute("""
+        DELETE FROM vocabulary
+        WHERE id NOT IN (
+            SELECT MIN(id) FROM vocabulary GROUP BY LOWER(word)
+        )
+    """)
+
     conn.commit()
     conn.close()
     print(f"✅ 資料庫初始化完成：{DB_PATH}")
@@ -178,19 +186,24 @@ def save_session(audio_file, transcript, analysis, diarized=None):
             err.get("explanation")
         ))
 
+    def _word_exists(cur, word):
+        cur.execute("SELECT 1 FROM vocabulary WHERE LOWER(word) = LOWER(?) LIMIT 1", (word,))
+        return cur.fetchone() is not None
+
     # ── 步驟 3：存入單字（vocabulary 表）─────────────────────
     vocab_list = analysis.get("vocabulary_highlights", [])
     for v in vocab_list:
-        cursor.execute("""
-            INSERT INTO vocabulary (session_id, word, part_of_speech, definition, example, source)
-            VALUES (?, ?, ?, ?, ?, 'vocabulary')
-        """, (session_id, v.get("word"), v.get("part_of_speech"), v.get("definition"), v.get("example")))
+        if v.get("word") and not _word_exists(cursor, v["word"]):
+            cursor.execute("""
+                INSERT INTO vocabulary (session_id, word, part_of_speech, definition, example, source)
+                VALUES (?, ?, ?, ?, ?, 'vocabulary')
+            """, (session_id, v.get("word"), v.get("part_of_speech"), v.get("definition"), v.get("example")))
 
     # ── 步驟 4：發音錯誤單字 ──────────────────────────────────
     for tip in analysis.get("pronunciation_tips", []):
         if isinstance(tip, dict) and tip.get("example"):
             word = tip["example"].split()[0].strip(".,!?\"'():").lower()
-            if word:
+            if word and not _word_exists(cursor, word):
                 cursor.execute("""
                     INSERT INTO vocabulary (session_id, word, definition, example, source)
                     VALUES (?, ?, ?, ?, 'pronunciation')
@@ -198,7 +211,7 @@ def save_session(audio_file, transcript, analysis, diarized=None):
 
     # ── 步驟 5：猶豫單字 ─────────────────────────────────────
     for hw in analysis.get("hesitant_words", []):
-        if hw.get("word"):
+        if hw.get("word") and not _word_exists(cursor, hw["word"]):
             cursor.execute("""
                 INSERT INTO vocabulary (session_id, word, part_of_speech, definition, example, source)
                 VALUES (?, ?, ?, ?, ?, 'hesitant')
@@ -241,9 +254,13 @@ def delete_session(session_id):
 
 
 def add_vocabulary_manually(word, definition, example="", part_of_speech=""):
-    """手動新增單字到單字本。"""
+    """手動新增單字到單字本（已存在則跳過）。"""
     conn = get_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM vocabulary WHERE LOWER(word) = LOWER(?) LIMIT 1", (word.strip(),))
+    if cursor.fetchone():
+        conn.close()
+        return
     cursor.execute("""
         INSERT INTO vocabulary (session_id, word, part_of_speech, definition, example, source)
         VALUES (NULL, ?, ?, ?, ?, 'manual')
