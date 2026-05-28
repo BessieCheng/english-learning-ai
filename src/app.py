@@ -43,7 +43,8 @@ with st.sidebar:
          "🗓️ 今日の単語 / 今日單字",
          "📰 ニュース検索 / 新聞搜尋",
          "🎙️ アップロード・分析 / 上傳分析"],
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="page_radio"
     )
 
     st.markdown("---")
@@ -56,6 +57,16 @@ with st.sidebar:
 if page == "🎙️ アップロード・分析 / 上傳分析":
 
     st.header("音声ファイルをアップロードして分析 / 上傳音檔開始分析")
+
+    # ── 從新聞頁帶入的練習文章 ────────────────────────────────
+    practice_news = st.session_state.get("practice_news")
+    if practice_news:
+        st.info(f"📰 練習文章：**{practice_news['title']}**")
+        with st.expander("查看文章內容 / 記事を確認する"):
+            st.write(practice_news["body"])
+        if st.button("✖ 取消連結 / 連結を解除", key="clear_practice"):
+            del st.session_state["practice_news"]
+            st.rerun()
 
     uploaded_file = st.file_uploader(
         "音声ファイルを選択（mp3・wav・m4a対応）/ 選擇音檔（支援 mp3、wav、m4a）",
@@ -117,7 +128,8 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                 # ── Step 3：AI 分析（話者情報付き）─────────────
                 with st.spinner("⏳ 分析中... / 正在分析..."):
                     from analyze_func import analyze
-                    analysis = analyze(transcript, diarized=diarized)
+                    ref = st.session_state.get("practice_news", {}).get("body")
+                    analysis = analyze(transcript, diarized=diarized, reference_text=ref)
 
                 from database import save_session
                 session_id = save_session(uploaded_file.name, transcript, analysis, diarized=diarized)
@@ -453,11 +465,18 @@ function saveToVocab(word) {{
                         vocab_md += f"- **{v.get('word')}** — {v.get('definition')}\n  > *{v.get('example')}*\n"
                     st.markdown(vocab_md)
 
-                # ── 儲存按鈕 ──────────────────────────────────────
-                if st.button("💾 儲存此新聞 / この記事を保存", key=f"save_news_{len(st.session_state.news_messages)}"):
-                    import json as _j
-                    save_news_article(title, source, date, body, _j.dumps(vocab, ensure_ascii=False))
-                    st.toast("✅ 新聞已儲存 / 記事を保存しました", icon="💾")
+                # ── 儲存 & 練習按鈕 ───────────────────────────────
+                btn_col1, btn_col2 = st.columns(2)
+                with btn_col1:
+                    if st.button("💾 儲存此新聞 / この記事を保存", key=f"save_news_{len(st.session_state.news_messages)}", use_container_width=True):
+                        import json as _j
+                        save_news_article(title, source, date, body, _j.dumps(vocab, ensure_ascii=False))
+                        st.toast("✅ 新聞已儲存 / 記事を保存しました", icon="💾")
+                with btn_col2:
+                    if st.button("🎙️ 用這篇練習 / この記事で練習", key=f"practice_news_{len(st.session_state.news_messages)}", use_container_width=True, type="primary"):
+                        st.session_state["practice_news"] = {"title": title, "body": body}
+                        st.session_state["page_radio"] = "🎙️ アップロード・分析 / 上傳分析"
+                        st.rerun()
 
                 # 存入歷史記錄（純文字版本）
                 saved = f"{header_md}\n\n{body}\n\n" + (
@@ -484,9 +503,16 @@ function saveToVocab(word) {{
                     st.markdown("**📖 Key Vocabulary:**")
                     for v in vocab_saved:
                         st.markdown(f"- **{v.get('word')}** — {v.get('definition')}")
-                if st.button("🗑️ 刪除 / 削除", key=f"del_news_{n['id']}"):
-                    delete_saved_news(n["id"])
-                    st.rerun()
+                btn_c1, btn_c2 = st.columns(2)
+                with btn_c1:
+                    if st.button("🎙️ 用這篇練習 / 練習する", key=f"practice_saved_{n['id']}", use_container_width=True, type="primary"):
+                        st.session_state["practice_news"] = {"title": n["title"], "body": n.get("body", "")}
+                        st.session_state["page_radio"] = "🎙️ アップロード・分析 / 上傳分析"
+                        st.rerun()
+                with btn_c2:
+                    if st.button("🗑️ 刪除 / 削除", key=f"del_news_{n['id']}", use_container_width=True):
+                        delete_saved_news(n["id"])
+                        st.rerun()
 
 # ══════════════════════════════════════════════════════════════
 # 頁面三：歷史記錄

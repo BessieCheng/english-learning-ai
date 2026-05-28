@@ -44,7 +44,7 @@ Return ONLY a valid JSON object with no extra text:
     raise RuntimeError("Gemini 查詢失敗，請稍後再試。")
 
 
-def analyze(transcript, diarized=None):
+def analyze(transcript, diarized=None, reference_text=None):
     """
     呼叫 Gemini API，分析逐字稿並回傳 dict 格式的分析結果。
 
@@ -77,8 +77,18 @@ def analyze(transcript, diarized=None):
             'In pronunciation_tips, identify non-native pronunciation issues and add a "speaker" field ("A") to each tip.'
         )
 
+    reference_section = ""
+    if reference_text:
+        reference_section = f"""
+The speakers were reading the following article aloud. Compare their speech against this original text to identify specific words they mispronounced, skipped, added, or struggled with. Prioritize errors that deviate from the article.
+
+Original article:
+\"\"\"{reference_text}\"\"\"
+"""
+
     prompt = f"""You are an English pronunciation coach specializing in helping Japanese and Taiwanese learners of English.
 {speaker_instruction}
+{reference_section}
 
 Analyze the following transcript and return ONLY a valid JSON object with no extra text, no markdown formatting, no code blocks.
 
