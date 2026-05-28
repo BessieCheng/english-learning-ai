@@ -47,7 +47,7 @@ def init_database():
         )
     """)
     # 舊資料庫升級：若缺欄位則補上
-    for col in ("analysis_json", "diarized_json"):
+    for col in ("analysis_json", "diarized_json", "reference_title"):
         try:
             cursor.execute(f"ALTER TABLE sessions ADD COLUMN {col} TEXT")
         except Exception:
@@ -142,7 +142,7 @@ def init_database():
     print(f"✅ 資料庫初始化完成：{DB_PATH}")
 
 
-def save_session(audio_file, transcript, analysis, diarized=None):
+def save_session(audio_file, transcript, analysis, diarized=None, reference_title=None):
     """
     把一次完整的分析結果存入資料庫。
 
@@ -159,15 +159,16 @@ def save_session(audio_file, transcript, analysis, diarized=None):
 
     # ── 步驟 1：存入主記錄（sessions 表）─────────────────────
     cursor.execute("""
-        INSERT INTO sessions (audio_file, transcript, score, summary, analysis_json, diarized_json)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO sessions (audio_file, transcript, score, summary, analysis_json, diarized_json, reference_title)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         audio_file,
         transcript,
         analysis.get("overall_score"),
         analysis.get("summary"),
         json.dumps(analysis, ensure_ascii=False),
-        json.dumps(diarized, ensure_ascii=False) if diarized else None
+        json.dumps(diarized, ensure_ascii=False) if diarized else None,
+        reference_title
     ))
     # ? 是佔位符號，防止 SQL Injection 安全漏洞
     # lastrowid 取得剛插入那筆資料的 ID
@@ -335,11 +336,16 @@ def delete_saved_news(news_id):
 def get_all_vocabulary():
     """
     查詢單字本所有單字，依加入時間由新到舊排序。
-    回傳：list of dict
+    回傳：list of dict（含 reference_title 欄位）
     """
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM vocabulary ORDER BY id DESC")
+    cursor.execute("""
+        SELECT v.*, s.reference_title
+        FROM vocabulary v
+        LEFT JOIN sessions s ON v.session_id = s.id
+        ORDER BY v.id DESC
+    """)
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]

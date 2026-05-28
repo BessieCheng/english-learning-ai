@@ -162,7 +162,8 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                     analysis = analyze(transcript, diarized=diarized, reference_text=ref)
 
                 from database import save_session
-                session_id = save_session(uploaded_file.name, transcript, analysis, diarized=diarized)
+                ref_title = st.session_state.get("practice_news", {}).get("title")
+                session_id = save_session(uploaded_file.name, transcript, analysis, diarized=diarized, reference_title=ref_title)
 
                 st.success("🎉 分析完了！/ 分析完成！")
 
@@ -488,6 +489,10 @@ function saveToVocab(word) {{
                 import streamlit.components.v1 as components
                 components.html(html_block, height=max(320, len(body) // 2))
 
+                # ── 複製文章按鈕 ──────────────────────────────────
+                with st.expander("📋 複製文章給朋友 / 記事をコピーする"):
+                    st.code(body, language=None)
+
                 # ── 重點單字
                 if vocab:
                     vocab_md = "\n**📖 Key Vocabulary:**\n"
@@ -772,7 +777,7 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
         st.caption(f"共 {len(filtered)} 個單字 / 合計 {len(filtered)} 単語")
 
         for v in filtered:
-            col_w, col_d, col_s, col_del = st.columns([2, 5, 1.5, 1])
+            col_w, col_d, col_s, col_del = st.columns([2, 4, 2, 1])
             with col_w:
                 pos = f" `{v['part_of_speech']}`" if v.get("part_of_speech") else ""
                 st.markdown(f"**{v['word']}**{pos}")
@@ -782,7 +787,12 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 else:
                     st.caption(v.get("definition", ""))
             with col_s:
-                st.caption(source_labels.get(v.get("source", ""), "📖"))
+                src = source_labels.get(v.get("source", ""), "📖")
+                ref = v.get("reference_title")
+                if ref:
+                    st.caption(f"{src}\n📰 {ref[:20]}{'…' if len(ref) > 20 else ''}")
+                else:
+                    st.caption(src)
             with col_del:
                 if st.button("🗑️", key=f"del_vocab_{v['id']}", help="刪除此單字"):
                     delete_vocabulary(v["id"])
