@@ -1,0 +1,22 @@
+# 環境變數（含 API Key）— 絕對不能上傳
+.env
+
+# Python 暫存檔
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS 系統檔
+.DS_Store
+
+# 測試音檔（通常檔案太大，不適合上傳）
+*.mp3
+*.wav
+*.m4a
+*.flac
+
+# 本機資料庫（使用者資料，不上傳）
+*.db
+
+# 暫存分析結果
+analysis_result.json
