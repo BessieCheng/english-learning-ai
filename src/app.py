@@ -692,7 +692,10 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 pos = f" `{v['part_of_speech']}`" if v.get("part_of_speech") else ""
                 st.markdown(f"**{v['word']}**{pos}")
             with col_d:
-                st.caption(v.get("definition", ""))
+                if v.get("source") == "pronunciation":
+                    st.caption(v.get("example", ""))
+                else:
+                    st.caption(v.get("definition", ""))
             with col_s:
                 st.caption(source_labels.get(v.get("source", ""), "📖"))
             with col_del:
