@@ -482,7 +482,7 @@ elif page == "📚 履歴 / 歷史記錄":
                 label_a_h = diarized_h.get("speaker_a_label", "Speaker A") if diarized_h else "Speaker A"
                 label_b_h = diarized_h.get("speaker_b_label", "Speaker B") if diarized_h else "Speaker B"
 
-                tab_t, tab_g, tab_p, tab_v = st.tabs(["💬 逐字稿", "📝 文法", "🗣️ 發音", "📚 單字"])
+                tab_t, tab_g, tab_p, tab_v = st.tabs(["💬 逐字稿 / 逐字起こし", "📝 文法 / 文法", "🗣️ 發音 / 発音", "📚 單字 / 単語"])
 
                 with tab_t:
                     if diarized_h and diarized_h.get("segments"):
