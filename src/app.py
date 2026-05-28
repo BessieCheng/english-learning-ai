@@ -13,7 +13,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(__file__))
-from database import init_database, get_all_sessions, get_vocabulary_due_today, delete_session
+from database import init_database, get_all_sessions, get_vocabulary_due_today, delete_session, get_all_vocabulary, delete_vocabulary
 
 load_dotenv()
 init_database()
@@ -665,3 +665,37 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                             st.session_state.card_index += 1
                             st.session_state.show_answer = False
                             st.rerun()
+
+    # ── 單字總表 ──────────────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("📋 単語総リスト / 單字總表")
+
+    all_vocab = get_all_vocabulary()
+    if not all_vocab:
+        st.info("還沒有單字記錄 / 単語がありません")
+    else:
+        source_labels = {
+            "vocabulary":    "📖 重點",
+            "pronunciation": "🗣️ 發音",
+            "hesitant":      "💭 猶豫",
+            "manual":        "✏️ 手動",
+        }
+
+        search_q = st.text_input("🔍 搜尋單字 / 単語を検索", placeholder="e.g. resilient", key="vocab_search")
+
+        filtered = [v for v in all_vocab if search_q.lower() in v["word"].lower()] if search_q else all_vocab
+        st.caption(f"共 {len(filtered)} 個單字 / 合計 {len(filtered)} 単語")
+
+        for v in filtered:
+            col_w, col_d, col_s, col_del = st.columns([2, 5, 1.5, 1])
+            with col_w:
+                pos = f" `{v['part_of_speech']}`" if v.get("part_of_speech") else ""
+                st.markdown(f"**{v['word']}**{pos}")
+            with col_d:
+                st.caption(v.get("definition", ""))
+            with col_s:
+                st.caption(source_labels.get(v.get("source", ""), "📖"))
+            with col_del:
+                if st.button("🗑️", key=f"del_vocab_{v['id']}", help="刪除此單字"):
+                    delete_vocabulary(v["id"])
+                    st.rerun()

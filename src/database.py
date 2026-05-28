@@ -269,3 +269,25 @@ def get_vocabulary_due_today():
     conn.close()
     return [dict(row) for row in rows]
 
+
+def get_all_vocabulary():
+    """
+    查詢單字本所有單字，依加入時間由新到舊排序。
+    回傳：list of dict
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM vocabulary ORDER BY id DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def delete_vocabulary(vocab_id):
+    """刪除指定單字。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM vocabulary WHERE id = ?", (vocab_id,))
+    conn.commit()
+    conn.close()
+
