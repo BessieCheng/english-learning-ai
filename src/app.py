@@ -58,15 +58,45 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
 
     st.header("音声ファイルをアップロードして分析 / 上傳音檔開始分析")
 
-    # ── 從新聞頁帶入的練習文章 ────────────────────────────────
+    # ── 練習文章（從新聞頁帶入 或 手動貼上/上傳）────────────────
     practice_news = st.session_state.get("practice_news")
-    if practice_news:
-        st.info(f"📰 練習文章：**{practice_news['title']}**")
-        with st.expander("查看文章內容 / 記事を確認する"):
-            st.write(practice_news["body"])
-        if st.button("✖ 取消連結 / 連結を解除", key="clear_practice"):
-            del st.session_state["practice_news"]
-            st.rerun()
+
+    with st.expander("📄 連結練習文章（選填）/ 練習記事を設定する（任意）", expanded=bool(practice_news)):
+        if practice_news:
+            st.success(f"📰 已連結：**{practice_news['title']}**")
+            with st.expander("查看文章內容 / 記事を確認する"):
+                st.write(practice_news["body"])
+            if st.button("✖ 取消連結 / 連結を解除", key="clear_practice"):
+                del st.session_state["practice_news"]
+                st.rerun()
+        else:
+            st.caption("貼上外部文章，或上傳 .txt 檔，讓 AI 對照原文分析 / 外部記事を貼り付けるか .txt をアップロード")
+
+            ext_tab1, ext_tab2 = st.tabs(["📋 貼上文字 / テキストを貼り付け", "📁 上傳 .txt / .txt をアップロード"])
+
+            with ext_tab1:
+                ext_title = st.text_input("文章標題（選填）/ タイトル（任意）", key="ext_title", placeholder="e.g. BBC News: AI in 2025")
+                ext_body  = st.text_area("貼上文章內容 / 記事本文を貼り付け", key="ext_body", height=150, placeholder="Paste article text here...")
+                if st.button("✅ 設定為練習文章 / 練習記事に設定", key="set_ext_text"):
+                    if ext_body.strip():
+                        st.session_state["practice_news"] = {
+                            "title": ext_title.strip() or "外部文章",
+                            "body":  ext_body.strip()
+                        }
+                        st.rerun()
+                    else:
+                        st.warning("請貼上文章內容 / 記事本文を入力してください")
+
+            with ext_tab2:
+                txt_file = st.file_uploader("上傳 .txt 檔 / .txt ファイルをアップロード", type=["txt"], key="ext_txt")
+                if txt_file:
+                    txt_content = txt_file.read().decode("utf-8", errors="ignore")
+                    if st.button("✅ 設定為練習文章 / 練習記事に設定", key="set_ext_file"):
+                        st.session_state["practice_news"] = {
+                            "title": txt_file.name.replace(".txt", ""),
+                            "body":  txt_content.strip()
+                        }
+                        st.rerun()
 
     uploaded_file = st.file_uploader(
         "音声ファイルを選択（mp3・wav・m4a対応）/ 選擇音檔（支援 mp3、wav、m4a）",
