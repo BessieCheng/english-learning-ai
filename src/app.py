@@ -13,7 +13,9 @@ import streamlit as st
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(__file__))
-from database import init_database, get_all_sessions, get_vocabulary_due_today, delete_session, get_all_vocabulary, delete_vocabulary
+from database import (init_database, get_all_sessions, get_vocabulary_due_today,
+                       delete_session, get_all_vocabulary, delete_vocabulary,
+                       save_news_article, get_saved_news, delete_saved_news)
 
 load_dotenv()
 init_database()
@@ -451,6 +453,12 @@ function saveToVocab(word) {{
                         vocab_md += f"- **{v.get('word')}** — {v.get('definition')}\n  > *{v.get('example')}*\n"
                     st.markdown(vocab_md)
 
+                # ── 儲存按鈕 ──────────────────────────────────────
+                if st.button("💾 儲存此新聞 / この記事を保存", key=f"save_news_{len(st.session_state.news_messages)}"):
+                    import json as _j
+                    save_news_article(title, source, date, body, _j.dumps(vocab, ensure_ascii=False))
+                    st.toast("✅ 新聞已儲存 / 記事を保存しました", icon="💾")
+
                 # 存入歷史記錄（純文字版本）
                 saved = f"{header_md}\n\n{body}\n\n" + (
                     "**📖 Key Vocabulary:**\n" +
@@ -458,6 +466,27 @@ function saveToVocab(word) {{
                     if vocab else ""
                 )
                 st.session_state.news_messages.append({"role": "assistant", "content": saved})
+
+    # ── 已儲存新聞清單 ─────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("💾 保存した記事 / 已儲存新聞")
+    saved_list = get_saved_news()
+    if not saved_list:
+        st.info("まだ保存した記事はありません / 還沒有儲存的新聞")
+    else:
+        for n in saved_list:
+            with st.expander(f"📰 {n['title']}  ·  {n.get('date_str','')}"):
+                st.caption(f"來源 / ソース：{n.get('source','')}　｜　儲存於 {n.get('saved_at','')[:16]}")
+                st.write(n.get("body", ""))
+                import json as _j
+                vocab_saved = _j.loads(n.get("vocab_json") or "[]")
+                if vocab_saved:
+                    st.markdown("**📖 Key Vocabulary:**")
+                    for v in vocab_saved:
+                        st.markdown(f"- **{v.get('word')}** — {v.get('definition')}")
+                if st.button("🗑️ 刪除 / 削除", key=f"del_news_{n['id']}"):
+                    delete_saved_news(n["id"])
+                    st.rerun()
 
 # ══════════════════════════════════════════════════════════════
 # 頁面三：歷史記錄

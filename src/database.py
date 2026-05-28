@@ -270,6 +270,51 @@ def get_vocabulary_due_today():
     return [dict(row) for row in rows]
 
 
+def save_news_article(title, source, date_str, body, vocab_json=""):
+    """儲存一篇新聞文章。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS saved_news (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            title      TEXT NOT NULL,
+            source     TEXT,
+            date_str   TEXT,
+            body       TEXT,
+            vocab_json TEXT,
+            saved_at   TEXT DEFAULT (datetime('now', 'localtime'))
+        )
+    """)
+    cursor.execute("""
+        INSERT INTO saved_news (title, source, date_str, body, vocab_json)
+        VALUES (?, ?, ?, ?, ?)
+    """, (title, source, date_str, body, vocab_json))
+    conn.commit()
+    conn.close()
+
+
+def get_saved_news():
+    """回傳所有已儲存新聞，由新到舊。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM saved_news ORDER BY saved_at DESC")
+        rows = cursor.fetchall()
+    except Exception:
+        rows = []
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def delete_saved_news(news_id):
+    """刪除指定新聞。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM saved_news WHERE id = ?", (news_id,))
+    conn.commit()
+    conn.close()
+
+
 def get_all_vocabulary():
     """
     查詢單字本所有單字，依加入時間由新到舊排序。
