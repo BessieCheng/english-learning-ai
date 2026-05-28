@@ -3,11 +3,24 @@
 # 功能：把一次分析結果轉成 PDF 報告檔
 # =============================================================
 
+import os
 from datetime import datetime
 from fpdf import FPDF, XPos, YPos
 
-# macOS 內建字體，同時支援日文 / 繁體中文 / 英文
-FONT_PATH = "/System/Library/Fonts/STHeiti Medium.ttc"
+def _find_cjk_font():
+    candidates = [
+        "/System/Library/Fonts/STHeiti Medium.ttc",                      # macOS
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",        # Ubuntu (Streamlit Cloud)
+        "/usr/share/fonts/noto-cjk/NotoSansCJKtc-Regular.otf",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJKtc-Regular.otf",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    raise FileNotFoundError("CJK 字型找不到，請確認已安裝 fonts-noto-cjk")
+
+FONT_PATH = _find_cjk_font()
 
 # multi_cell を呼ぶ際に必ず cursor を左端に戻す共通オプション
 MC = {"new_x": XPos.LMARGIN, "new_y": YPos.NEXT}
