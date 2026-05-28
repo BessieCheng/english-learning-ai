@@ -46,33 +46,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption("🌐 外部分享 / Share")
-
-    import subprocess as _sp
-    import shutil as _sh
-
-    def _ngrok_url():
-        try:
-            import urllib.request, json as _j
-            with urllib.request.urlopen("http://localhost:4040/api/tunnels", timeout=1) as r:
-                tunnels = _j.loads(r.read())["tunnels"]
-                return tunnels[0]["public_url"] if tunnels else None
-        except Exception:
-            return None
-
-    _url = _ngrok_url()
-    if _url:
-        st.success("分享中 / Sharing")
-        st.code(_url, language=None)
-        if st.button("⛔ 停止分享 / Stop", use_container_width=True):
-            _sp.run(["pkill", "ngrok"])
-            st.toast("分享を停止しました / 已停止分享")
-            st.rerun()
-    else:
-        if st.button("🌐 分享連結 / Start Share", use_container_width=True):
-            _sp.Popen(["ngrok", "http", "8501"],
-                      stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
-            import time as _t; _t.sleep(3)
-            st.rerun()
+    st.info("直接將此頁面網址分享給朋友即可 / Share this page URL directly with friends")
 
 # ══════════════════════════════════════════════════════════════
 # 頁面一：上傳分析
