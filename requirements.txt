@@ -1,0 +1,6 @@
+streamlit
+python-dotenv
+assemblyai
+google-genai
+groq
+fpdf2
