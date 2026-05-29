@@ -15,11 +15,11 @@ load_dotenv()
 
 # ── 多益分數對應的程度說明 ─────────────────────────────────────
 TOEIC_LEVELS = {
-    "TOEIC 350 以下 / 350点以下":  ("A1-A2", "very short simple sentences, basic everyday vocabulary"),
-    "TOEIC 350–550 / 350–550点":   ("A2-B1", "simple sentences, common vocabulary"),
-    "TOEIC 550–700 / 550–700点":   ("B1-B2", "standard news language, some complex sentences"),
-    "TOEIC 700–850 / 700–850点":   ("B2-C1", "formal news style, complex structures"),
-    "TOEIC 850 以上 / 850点以上":   ("C1-C2", "professional news English, sophisticated vocabulary"),
+    "TOEIC ≤ 350":     ("A1-A2", "very short simple sentences, basic everyday vocabulary"),
+    "TOEIC 350–550":   ("A2-B1", "simple sentences, common vocabulary"),
+    "TOEIC 550–700":   ("B1-B2", "standard news language, some complex sentences"),
+    "TOEIC 700–850":   ("B2-C1", "formal news style, complex structures"),
+    "TOEIC ≥ 850":     ("C1-C2", "professional news English, sophisticated vocabulary"),
 }
 
 

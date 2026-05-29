@@ -853,6 +853,14 @@ elif page == "news":
     )
     st.caption(t("news_caption"))
 
+    # ── 検索ボックス（レベル選択のすぐ下に配置）──
+    sc1, sc2 = st.columns([5, 1])
+    with sc1:
+        _topic = st.text_input("topic", placeholder=t("news_chat_in"),
+                               label_visibility="collapsed", key="news_topic")
+    with sc2:
+        _go = st.button("🔍", use_container_width=True, type="primary", key="news_go")
+
     # 初始化聊天記錄
     if "news_messages" not in st.session_state:
         st.session_state.news_messages = []
@@ -862,8 +870,9 @@ elif page == "news":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"], unsafe_allow_html=True)
 
-    # 聊天輸入框（任何語言皆可）
-    if prompt := st.chat_input(t("news_chat_in")):
+    # 検索実行（任何語言皆可）
+    if _go and _topic.strip():
+        prompt = _topic.strip()
 
         # 顯示使用者訊息
         with st.chat_message("user"):
@@ -1473,27 +1482,30 @@ elif page == "today":  # noqa: E501
         st.caption(f"{t('today_cnt1')}{len(filtered)}{t('today_cnt2')}")
 
         for v in filtered:
-            col_w, col_tts, col_d, col_s, col_del = st.columns([2, 0.8, 3.4, 1.8, 1])
-            with col_w:
-                pos_html = f' <code style="font-size:0.7em;background:#F5F5F5;color:#888;padding:1px 5px;">{v["part_of_speech"]}</code>' if v.get("part_of_speech") else ""
+            # 手機友善：3 欄（単語＋定義 / 🔊 / 🗑️）。詞性は折り返さない。
+            col_main, col_tts, col_del = st.columns([5, 1, 1])
+            with col_main:
+                pos_html = (
+                    f'<code style="font-size:0.68em;background:#F5F5F5;color:#888;'
+                    f'padding:1px 6px;margin-left:6px;white-space:nowrap;">{v["part_of_speech"]}</code>'
+                    if v.get("part_of_speech") else ""
+                )
+                # 定義（發音錯誤類用例句）
+                desc = v.get("example", "") if v.get("source") == "pronunciation" else v.get("definition", "")
+                # 來源標籤
+                src = source_labels.get(v.get("source", ""), "📖")
+                ref = v.get("reference_title")
+                src_html = f'{src}　📰 {ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
                 st.markdown(
-                    f'<div style="padding-top:6px;"><span style="font-weight:500;color:#1A1A1A;">{v["word"]}</span>{pos_html}</div>',
+                    f'<div style="padding-top:4px;line-height:1.5;">'
+                    f'<span style="font-weight:500;color:#1A1A1A;white-space:nowrap;">{v["word"]}</span>{pos_html}<br>'
+                    f'<span style="font-size:12px;color:#888;">{desc}</span>'
+                    f'<span style="font-size:11px;color:#CCC;margin-left:8px;white-space:nowrap;">{src_html}</span>'
+                    f'</div>',
                     unsafe_allow_html=True
                 )
             with col_tts:
                 speak_button(v["word"], label="🔊", height=40, font_size=14)
-            with col_d:
-                if v.get("source") == "pronunciation":
-                    st.caption(v.get("example", ""))
-                else:
-                    st.caption(v.get("definition", ""))
-            with col_s:
-                src = source_labels.get(v.get("source", ""), "📖")
-                ref = v.get("reference_title")
-                if ref:
-                    st.caption(f"{src}\n📰 {ref[:20]}{'…' if len(ref) > 20 else ''}")
-                else:
-                    st.caption(src)
             with col_del:
                 if st.button("🗑️", key=f"del_vocab_{v['id']}", help=t("today_del_help")):
                     delete_vocabulary(v["id"])
