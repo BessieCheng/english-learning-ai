@@ -150,13 +150,14 @@ input:focus, textarea:focus {
     box-shadow: none !important;
 }
 
-/* ── メトリクス ── */
-[data-testid="metric-container"] {
+/* ── メトリクス（新旧 Streamlit 両対応の testid）── */
+[data-testid="metric-container"],
+[data-testid="stMetric"] {
     background: #FFF !important;
     border: 1px solid #E8E8E8 !important;
     border-top: 2px solid #4A7C59 !important;
     border-radius: 2px !important;
-    padding: 16px !important;
+    padding: 18px 20px !important;
 }
 [data-testid="stMetricValue"] {
     font-size: 2rem !important; font-weight: 300 !important;
@@ -208,15 +209,23 @@ input:focus, textarea:focus {
 .stWarning { background: #FDF8F0 !important; border-color: #C4A45A !important; color: #7A5A1A !important; }
 
 /* ── 進捗バー ── */
+[data-testid="stProgress"] { margin: 4px 0 !important; }
+/* track（背景）灰 */
+[data-testid="stProgress"] > div {
+    background: #ECECEC !important;
+    border-radius: 2px !important;
+    height: 4px !important;
+    overflow: hidden !important;
+}
+/* fill（進捗）抹茶緑 */
 [data-testid="stProgress"] > div > div {
     background: #4A7C59 !important;
-    border-radius: 0 !important;
-    height: 2px !important;
+    border-radius: 2px !important;
+    height: 4px !important;
 }
-[data-testid="stProgress"] > div {
-    background: #E8E8E8 !important;
-    border-radius: 0 !important;
-    height: 2px !important;
+[data-testid="stProgress"] p {
+    color: #999 !important; font-size: 12px !important;
+    letter-spacing: .05em !important; margin-top: 4px !important;
 }
 
 /* ── divider ── */
@@ -232,6 +241,41 @@ code { background: #F5F5F5 !important; color: #555 !important;
     border: 1px solid #E0E0E0 !important;
     border-radius: 2px !important;
     background: #FFF !important;
+}
+/* Upload/Browse ボタンを Zen 風に（黒を消す）*/
+[data-testid="stFileUploader"] button,
+[data-testid="stFileUploaderDropzone"] button {
+    background: #FFF !important;
+    color: #4A7C59 !important;
+    border: 1px solid #4A7C59 !important;
+    border-radius: 2px !important;
+    font-weight: 400 !important;
+    letter-spacing: .05em !important;
+    box-shadow: none !important;
+}
+[data-testid="stFileUploader"] button:hover {
+    background: #F0F7F2 !important;
+    color: #3D6A4B !important;
+}
+
+/* ── チャット入力（ニュース検索）の黒帯を消す ── */
+[data-testid="stBottom"],
+[data-testid="stBottomBlockContainer"],
+[data-testid="stChatInput"] {
+    background: #FAFAFA !important;
+}
+[data-testid="stChatInput"] > div {
+    background: #FFF !important;
+    border: 1px solid #E0E0E0 !important;
+    border-radius: 2px !important;
+}
+[data-testid="stChatInput"] textarea {
+    background: #FFF !important;
+    color: #1A1A1A !important;
+}
+[data-testid="stChatInput"] button {
+    background: #4A7C59 !important;
+    border-radius: 2px !important;
 }
 
 /* ── selectbox ── */
@@ -1174,7 +1218,7 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
             )
 
             if not st.session_state.show_answer:
-                if st.button("👁️ 答えを見る / 顯示答案", use_container_width=True):
+                if st.button("👁️ 答えを見る / 顯示答案", use_container_width=True, type="primary"):
                     st.session_state.show_answer = True
                     st.rerun()
 
