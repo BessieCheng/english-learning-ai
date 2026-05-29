@@ -50,6 +50,167 @@ def speak_button(word, label="🔊", height=44, font_size=13):
     )
 
 # ══════════════════════════════════════════════════════════════
+# 介面語言切換（ja = 日本語 / zh = 繁體中文）
+# ══════════════════════════════════════════════════════════════
+if "lang" not in st.session_state:
+    st.session_state["lang"] = "ja"
+
+LANG = {
+    # ── ナビ / 導覽 ──
+    "nav_history":   {"ja": "📚 履歴",          "zh": "📚 歷史記錄"},
+    "nav_today":     {"ja": "🗓️ 今日の単語",     "zh": "🗓️ 今日單字"},
+    "nav_news":      {"ja": "📰 ニュース",       "zh": "📰 新聞搜尋"},
+    "nav_upload":    {"ja": "🎙️ 分析",          "zh": "🎙️ 上傳分析"},
+
+    # ── サイドバー / 側邊欄 ──
+    "side_subtitle": {"ja": "英文分析",          "zh": "英文分析"},
+    "side_menu":     {"ja": "MENU",             "zh": "MENU"},
+    "side_share":    {"ja": "SHARE",            "zh": "SHARE"},
+    "side_share_desc": {"ja": "このページのURLを友達にシェア",
+                        "zh": "將此頁面網址分享給朋友"},
+
+    # ── タイトル / 標題 ──
+    "title_main":    {"ja": "🎙️ 英文対話分析・スマート単語帳",
+                      "zh": "🎙️ 英文對話分析與智慧單字本"},
+    "title_sub":     {"ja": "AIで英会話を分析・単語を記憶",
+                      "zh": "用 AI 分析英語對話、記憶單字"},
+
+    # ── アップロード分析ページ / 上傳分析頁 ──
+    "up_header":     {"ja": "音声をアップロードして分析",
+                      "zh": "上傳音檔開始分析"},
+    "up_link_exp":   {"ja": "📄 練習記事を設定（任意）",
+                      "zh": "📄 連結練習文章（選填）"},
+    "up_linked":     {"ja": "📰 連携中：",        "zh": "📰 已連結："},
+    "up_view_body":  {"ja": "記事を確認",         "zh": "查看文章內容"},
+    "up_unlink":     {"ja": "✖ 連携を解除",       "zh": "✖ 取消連結"},
+    "up_link_hint":  {"ja": "記事を貼り付けるか .txt をアップロードすると、AIが原文と照合します",
+                      "zh": "貼上文章或上傳 .txt 檔，AI 會對照原文分析"},
+    "up_tab_paste":  {"ja": "📋 貼り付け",        "zh": "📋 貼上文字"},
+    "up_tab_file":   {"ja": "📁 .txt",           "zh": "📁 上傳 .txt"},
+    "up_title_in":   {"ja": "タイトル（任意）",    "zh": "文章標題（選填）"},
+    "up_body_in":    {"ja": "記事本文を貼り付け",  "zh": "貼上文章內容"},
+    "up_set_btn":    {"ja": "✅ 練習記事に設定",   "zh": "✅ 設定為練習文章"},
+    "up_no_body":    {"ja": "記事本文を入力してください",
+                      "zh": "請貼上文章內容"},
+    "up_file_in":    {"ja": ".txt ファイルをアップロード",
+                      "zh": "上傳 .txt 檔"},
+    "up_ext_default":{"ja": "外部記事",           "zh": "外部文章"},
+    "up_audio_in":   {"ja": "音声ファイルを選択（mp3・wav・m4a）",
+                      "zh": "選擇音檔（mp3、wav、m4a）"},
+    "up_done":       {"ja": "✅ アップロード完了：",
+                      "zh": "✅ 已上傳："},
+    "up_start":      {"ja": "🚀 分析開始",        "zh": "🚀 開始分析"},
+    "up_sp_trans":   {"ja": "⏳ 文字起こし＋話者識別中（約30秒）...",
+                      "zh": "⏳ 轉錄＋識別說話者中（約30秒）..."},
+    "up_speakers":   {"ja": "位の話者、",          "zh": "位說話者，"},
+    "up_segments":   {"ja": "セグメント",          "zh": "段"},
+    "up_diar_err":   {"ja": "⚠️ 分離エラー（バックアップモード）:",
+                      "zh": "⚠️ 分離錯誤（使用備用模式）:"},
+    "up_transcript": {"ja": "💬 話者別逐字稿",     "zh": "💬 說話者分離逐字稿"},
+    "up_sp_analyze": {"ja": "⏳ 分析中...",        "zh": "⏳ 正在分析..."},
+    "up_complete":   {"ja": "🎉 分析完了！",       "zh": "🎉 分析完成！"},
+    "up_m_score":    {"ja": "総合評価",           "zh": "整體評分"},
+    "up_m_vocab":    {"ja": "新規単語",           "zh": "新增單字"},
+    "up_m_unit":     {"ja": "個",                "zh": "個"},
+    "up_h_grammar":  {"ja": "📝 文法アドバイス",   "zh": "📝 文法建議"},
+    "up_no_grammar": {"ja": "文法エラーは見つかりませんでした！",
+                      "zh": "沒有發現明顯文法錯誤！"},
+    "up_h_vocab":    {"ja": "📚 学んだ単語",       "zh": "📚 學到的單字"},
+    "up_example":    {"ja": "例文：",             "zh": "例句："},
+    "up_h_pron":     {"ja": "🗣️ 発音のヒント",     "zh": "🗣️ 發音提示"},
+    "up_pdf_btn":    {"ja": "📄 レポートをPDFでダウンロード",
+                      "zh": "📄 下載 PDF 分析報告"},
+
+    # ── ニュースページ / 新聞頁 ──
+    "news_added":    {"ja": "を単語本に追加",      "zh": "已加入單字本"},
+    "news_header":   {"ja": "📰 英語ニュース検索",  "zh": "📰 英文新聞搜尋"},
+    "news_level":    {"ja": "📊 英語レベル",       "zh": "📊 英文程度"},
+    "news_caption":  {"ja": "💡 どの言語でもOK、Geminiがリアルなニュースを検索します",
+                      "zh": "💡 任何語言輸入主題，Gemini 會幫你找真實新聞"},
+    "news_chat_in":  {"ja": "ニュースのテーマを入力... (e.g. AI, climate, economy)",
+                      "zh": "輸入你想看的新聞主題... (e.g. AI, climate, economy)"},
+    "news_search_fail": {"ja": "検索失敗：",       "zh": "搜尋失敗："},
+    "news_tip_line": {"ja": "🔊 単語をタップで発音 ｜ 長押しで単語本に追加",
+                      "zh": "🔊 點擊單字可聽發音 ｜ 長按可加入單字本"},
+    "news_copy_exp": {"ja": "📋 記事をコピー",     "zh": "📋 複製文章給朋友"},
+    "news_save_btn": {"ja": "💾 記事を保存",       "zh": "💾 儲存此新聞"},
+    "news_saved_toast": {"ja": "✅ 記事を保存しました",
+                         "zh": "✅ 新聞已儲存"},
+    "news_practice_btn": {"ja": "🎙️ この記事で練習", "zh": "🎙️ 用這篇練習"},
+    "news_h_saved":  {"ja": "💾 保存した記事",     "zh": "💾 已儲存新聞"},
+    "news_no_saved": {"ja": "まだ保存した記事はありません",
+                      "zh": "還沒有儲存的新聞"},
+    "news_source":   {"ja": "ソース：",           "zh": "來源："},
+    "news_saved_at": {"ja": "保存日 ",            "zh": "儲存於 "},
+    "news_practice2":{"ja": "🎙️ この記事で練習",   "zh": "🎙️ 用這篇練習"},
+    "news_delete":   {"ja": "🗑️ 削除",            "zh": "🗑️ 刪除"},
+
+    # ── 履歴ページ / 歷史頁 ──
+    "hist_header":   {"ja": "分析履歴",           "zh": "歷史分析記錄"},
+    "hist_empty":    {"ja": "まだ記録がありません。音声をアップロードしてください！",
+                      "zh": "還沒有任何記錄，請先上傳音檔分析！"},
+    "hist_count1":   {"ja": "合計 ",              "zh": "共 "},
+    "hist_count2":   {"ja": " 件",               "zh": " 筆記錄"},
+    "hist_score":    {"ja": "評価：",             "zh": "評分："},
+    "hist_tab_t":    {"ja": "💬 逐字起こし",       "zh": "💬 逐字稿"},
+    "hist_tab_g":    {"ja": "📝 文法",            "zh": "📝 文法"},
+    "hist_tab_p":    {"ja": "🗣️ 発音",            "zh": "🗣️ 發音"},
+    "hist_tab_v":    {"ja": "📚 単語",            "zh": "📚 單字"},
+    "hist_no_grammar": {"ja": "文法エラーなし",    "zh": "沒有文法錯誤"},
+    "hist_no_pron":  {"ja": "発音提示なし",        "zh": "無發音提示"},
+    "hist_no_vocab": {"ja": "単語なし",           "zh": "無單字"},
+    "hist_example":  {"ja": "例文：",             "zh": "例句："},
+    "hist_delete":   {"ja": "🗑️ 削除",            "zh": "🗑️ 刪除"},
+    "hist_del_toast":{"ja": "削除しました",        "zh": "已刪除"},
+
+    # ── 今日の単語ページ / 今日單字頁 ──
+    "today_header":  {"ja": "今日の単語復習",      "zh": "今日單字複習"},
+    "today_add_exp": {"ja": "➕ 単語を手動追加",   "zh": "➕ 手動新增單字"},
+    "today_word_in": {"ja": "英単語",            "zh": "英文單字"},
+    "today_add_btn": {"ja": "🔍 自動で調べて追加", "zh": "🔍 自動查詢並加入單字本"},
+    "today_lookup":  {"ja": "Gemini で検索中：",   "zh": "Gemini 查詢中："},
+    "today_ex":      {"ja": "例文：",             "zh": "例句："},
+    "today_lookup_fail": {"ja": "検索失敗：",      "zh": "查詢失敗："},
+    "today_no_word": {"ja": "単語を入力してください", "zh": "請輸入單字"},
+    "today_all_done":{"ja": "🎉 今日復習する単語はありません。お疲れさまでした！",
+                      "zh": "🎉 今天沒有需要複習的單字，很棒！"},
+    "today_done1":   {"ja": "🎉 今日の ",         "zh": "🎉 今天的 "},
+    "today_done2":   {"ja": " 単語をすべて完了！",  "zh": " 個單字全部複習完畢！"},
+    "today_restart": {"ja": "最初から",           "zh": "重新開始"},
+    "today_m_today": {"ja": "今日",              "zh": "今日"},
+    "today_m_done":  {"ja": "完了",              "zh": "已複習"},
+    "today_m_left":  {"ja": "残り",              "zh": "剩餘"},
+    "today_progress":{"ja": "進捗：",             "zh": "進度："},
+    "today_listen":  {"ja": "🔊 発音",            "zh": "🔊 發音"},
+    "today_review_n":{"ja": "復習 ",             "zh": "複習 "},
+    "today_review_unit": {"ja": " 回",           "zh": " 回"},
+    "today_ease":    {"ja": "難易度 ",            "zh": "難易度 "},
+    "today_show":    {"ja": "👁️ 答えを見る",       "zh": "👁️ 顯示答案"},
+    "today_meaning": {"ja": "意味：",             "zh": "中文："},
+    "today_ex_label":{"ja": "例文：",             "zh": "例句："},
+    "today_how_much":{"ja": "どれだけ覚えていますか？", "zh": "你記得多少？"},
+    "today_src_vocab":{"ja": "📖 重要単語",        "zh": "📖 重點單字"},
+    "today_src_pron": {"ja": "🗣️ 発音ミス",        "zh": "🗣️ 發音錯誤"},
+    "today_src_hesit":{"ja": "💭 迷った単語",       "zh": "💭 猶豫單字"},
+    "today_src_manual":{"ja": "✏️ 手動追加",        "zh": "✏️ 手動新增"},
+    "today_h_list":  {"ja": "📋 単語リスト",       "zh": "📋 單字總表"},
+    "today_no_list": {"ja": "まだ単語がありません", "zh": "還沒有單字記錄"},
+    "today_lbl_vocab":{"ja": "📖 重要",            "zh": "📖 重點"},
+    "today_lbl_pron": {"ja": "🗣️ 発音",            "zh": "🗣️ 發音"},
+    "today_lbl_hesit":{"ja": "💭 迷い",            "zh": "💭 猶豫"},
+    "today_lbl_manual":{"ja": "✏️ 手動",           "zh": "✏️ 手動"},
+    "today_search":  {"ja": "🔍 単語を検索",       "zh": "🔍 搜尋單字"},
+    "today_cnt1":    {"ja": "合計 ",             "zh": "共 "},
+    "today_cnt2":    {"ja": " 単語",             "zh": " 個單字"},
+    "today_del_help":{"ja": "この単語を削除",       "zh": "刪除此單字"},
+}
+
+
+def t(key):
+    return LANG.get(key, {}).get(st.session_state["lang"], key)
+
+
+# ══════════════════════════════════════════════════════════════
 # 頁面基本設定
 # ══════════════════════════════════════════════════════════════
 st.set_page_config(
@@ -61,9 +222,9 @@ st.set_page_config(
 st.markdown(
     '<div style="padding:4px 0 20px;border-bottom:1px solid #E8E8E8;margin-bottom:28px;">'
     '<div style="font-size:24px;font-weight:400;letter-spacing:.04em;color:#1A1A1A;line-height:1.4;">'
-    '🎙️ 英文対話分析・スマート単語帳</div>'
+    f'{t("title_main")}</div>'
     '<div style="font-size:14px;font-weight:400;color:#888;letter-spacing:.03em;margin-top:2px;">'
-    '英文對話分析與智慧單字本</div>'
+    f'{t("title_sub")}</div>'
     '</div>',
     unsafe_allow_html=True
 )
@@ -449,72 +610,78 @@ h3::before {
 # 側邊欄：導覽選單
 # ══════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown(
-        '<div style="padding:4px 0 8px;">'
-        '<div style="font-size:15px;font-weight:500;color:#1A1A1A;letter-spacing:.05em;">🎙 英文分析</div>'
-        '<div style="font-size:10px;color:#BBB;letter-spacing:.22em;margin-top:2px;">ENGLISH LEARNING AI</div>'
-        '</div>'
-        '<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:18px 0 8px;">MENU</div>',
-        unsafe_allow_html=True
-    )
-    page = st.radio(
-        "選擇功能",
-        ["📚 履歴 / 歷史記錄",
-         "🗓️ 今日の単語 / 今日單字",
-         "📰 ニュース検索 / 新聞搜尋",
-         "🎙️ アップロード・分析 / 上傳分析"],
-        label_visibility="collapsed",
-        key="page_radio"
-    )
+    lang_choice = st.radio("Language", ["日本語", "中文"],
+        index=0 if st.session_state["lang"] == "ja" else 1,
+        horizontal=True, label_visibility="collapsed", key="lang_sel")
+    st.session_state["lang"] = "ja" if lang_choice == "日本語" else "zh"
 
     st.markdown(
-        '<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:24px 0 8px;">SHARE</div>'
+        '<div style="padding:4px 0 8px;">'
+        f'<div style="font-size:15px;font-weight:500;color:#1A1A1A;letter-spacing:.05em;">🎙 {t("side_subtitle")}</div>'
+        '<div style="font-size:10px;color:#BBB;letter-spacing:.22em;margin-top:2px;">ENGLISH LEARNING AI</div>'
+        '</div>'
+        f'<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:18px 0 8px;">{t("side_menu")}</div>',
+        unsafe_allow_html=True
+    )
+    PAGE_KEYS = ["history", "today", "news", "upload"]
+    page_labels = [t("nav_history"), t("nav_today"), t("nav_news"), t("nav_upload")]
+    # index で現在ページを記憶（言語切替でラベルが変わっても壊れない）
+    if "page_idx" not in st.session_state:
+        st.session_state["page_idx"] = 0
+    sel = st.radio("menu", page_labels,
+                   index=st.session_state["page_idx"],
+                   label_visibility="collapsed")
+    st.session_state["page_idx"] = page_labels.index(sel)
+    page = PAGE_KEYS[st.session_state["page_idx"]]
+
+    st.markdown(
+        f'<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:24px 0 8px;">{t("side_share")}</div>'
         '<div style="font-size:11px;color:#999;line-height:1.7;letter-spacing:.03em;">'
-        '直接將此頁面網址分享給朋友<br>Share this page URL with friends</div>',
+        f'{t("side_share_desc")}</div>',
         unsafe_allow_html=True
     )
 
 # ══════════════════════════════════════════════════════════════
 # 頁面一：上傳分析
 # ══════════════════════════════════════════════════════════════
-if page == "🎙️ アップロード・分析 / 上傳分析":
+if page == "upload":
 
-    st.header("音声ファイルをアップロードして分析 / 上傳音檔開始分析")
+    st.header(t("up_header"))
 
     # ── 練習文章（從新聞頁帶入 或 手動貼上/上傳）────────────────
     practice_news = st.session_state.get("practice_news")
 
-    with st.expander("📄 連結練習文章（選填）/ 練習記事を設定する（任意）", expanded=bool(practice_news)):
+    with st.expander(t("up_link_exp"), expanded=bool(practice_news)):
         if practice_news:
-            st.success(f"📰 已連結：**{practice_news['title']}**")
-            with st.expander("查看文章內容 / 記事を確認する"):
+            st.success(f"{t('up_linked')}**{practice_news['title']}**")
+            with st.expander(t("up_view_body")):
                 st.write(practice_news["body"])
-            if st.button("✖ 取消連結 / 連結を解除", key="clear_practice"):
+            if st.button(t("up_unlink"), key="clear_practice"):
                 del st.session_state["practice_news"]
                 st.rerun()
         else:
-            st.caption("貼上外部文章，或上傳 .txt 檔，讓 AI 對照原文分析 / 外部記事を貼り付けるか .txt をアップロード")
+            st.caption(t("up_link_hint"))
 
-            ext_tab1, ext_tab2 = st.tabs(["📋 貼上文字 / テキストを貼り付け", "📁 上傳 .txt / .txt をアップロード"])
+            ext_tab1, ext_tab2 = st.tabs([t("up_tab_paste"), t("up_tab_file")])
 
             with ext_tab1:
-                ext_title = st.text_input("文章標題（選填）/ タイトル（任意）", key="ext_title", placeholder="e.g. BBC News: AI in 2025")
-                ext_body  = st.text_area("貼上文章內容 / 記事本文を貼り付け", key="ext_body", height=150, placeholder="Paste article text here...")
-                if st.button("✅ 設定為練習文章 / 練習記事に設定", key="set_ext_text"):
+                ext_title = st.text_input(t("up_title_in"), key="ext_title", placeholder="e.g. BBC News: AI in 2025")
+                ext_body  = st.text_area(t("up_body_in"), key="ext_body", height=150, placeholder="Paste article text here...")
+                if st.button(t("up_set_btn"), key="set_ext_text"):
                     if ext_body.strip():
                         st.session_state["practice_news"] = {
-                            "title": ext_title.strip() or "外部文章",
+                            "title": ext_title.strip() or t("up_ext_default"),
                             "body":  ext_body.strip()
                         }
                         st.rerun()
                     else:
-                        st.warning("請貼上文章內容 / 記事本文を入力してください")
+                        st.warning(t("up_no_body"))
 
             with ext_tab2:
-                txt_file = st.file_uploader("上傳 .txt 檔 / .txt ファイルをアップロード", type=["txt"], key="ext_txt")
+                txt_file = st.file_uploader(t("up_file_in"), type=["txt"], key="ext_txt")
                 if txt_file:
                     txt_content = txt_file.read().decode("utf-8", errors="ignore")
-                    if st.button("✅ 設定為練習文章 / 練習記事に設定", key="set_ext_file"):
+                    if st.button(t("up_set_btn"), key="set_ext_file"):
                         st.session_state["practice_news"] = {
                             "title": txt_file.name.replace(".txt", ""),
                             "body":  txt_content.strip()
@@ -522,15 +689,15 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                         st.rerun()
 
     uploaded_file = st.file_uploader(
-        "音声ファイルを選択（mp3・wav・m4a対応）/ 選擇音檔（支援 mp3、wav、m4a）",
+        t("up_audio_in"),
         type=["mp3", "wav", "m4a", "flac"]
     )
 
     if uploaded_file is not None:
         st.audio(uploaded_file)
-        st.success(f"✅ アップロード完了 / 已上傳：{uploaded_file.name}")
+        st.success(f"{t('up_done')}{uploaded_file.name}")
 
-        if st.button("🚀 分析開始 / 開始分析", type="primary", use_container_width=True):
+        if st.button(t("up_start"), type="primary", use_container_width=True):
 
             suffix = os.path.splitext(uploaded_file.name)[1]
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -539,14 +706,14 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
 
             try:
                 # ── Step 1+2：AssemblyAI 轉錄 + 說話者分離（一次完成）─
-                with st.spinner("⏳ 轉錄＋識別說話者中（約30秒）... / 文字起こし＋話者識別中..."):
+                with st.spinner(t("up_sp_trans")):
                     from diarize_func import diarize, _fallback
                     try:
                         diarized = diarize(tmp_path)
                         transcript = diarized.get("transcript", "")
-                        st.info(f"🔍 {diarized.get('speaker_count')} 位說話者，{len(diarized.get('segments', []))} 段")
+                        st.info(f"🔍 {diarized.get('speaker_count')} {t('up_speakers')}{len(diarized.get('segments', []))} {t('up_segments')}")
                     except Exception as diarize_err:
-                        st.warning(f"⚠️ 分離錯誤（使用備用模式）:\n\n`{diarize_err}`")
+                        st.warning(f"{t('up_diar_err')}\n\n`{diarize_err}`")
                         from transcribe_func import transcribe
                         whisper_result = transcribe(tmp_path)
                         transcript = whisper_result["text"]
@@ -556,7 +723,7 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                 label_a = diarized.get("speaker_a_label", "Speaker A")
                 label_b = diarized.get("speaker_b_label", "Speaker B")
 
-                with st.expander("💬 話者別逐字稿 / 說話者分離逐字稿", expanded=True):
+                with st.expander(t("up_transcript"), expanded=True):
                     # 話者 A → 青, 話者 B → 緑 で色分け
                     for seg in diarized.get("segments", []):
                         spk = seg.get("speaker", "A")
@@ -579,7 +746,7 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                             )
 
                 # ── Step 3：AI 分析（話者情報付き）─────────────
-                with st.spinner("⏳ 分析中... / 正在分析..."):
+                with st.spinner(t("up_sp_analyze")):
                     from analyze_func import analyze
                     ref = st.session_state.get("practice_news", {}).get("body")
                     analysis = analyze(transcript, diarized=diarized, reference_text=ref)
@@ -588,19 +755,19 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                 ref_title = st.session_state.get("practice_news", {}).get("title")
                 session_id = save_session(uploaded_file.name, transcript, analysis, diarized=diarized, reference_title=ref_title)
 
-                st.success("🎉 分析完了！/ 分析完成！")
+                st.success(t("up_complete"))
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric("総合評価 / 整體評分", f"{analysis.get('overall_score')} / 10")
+                    st.metric(t("up_m_score"), f"{analysis.get('overall_score')} / 10")
                 with col2:
-                    st.metric("新規単語 / 新增單字", f"{len(analysis.get('vocabulary_highlights', []))} 個")
+                    st.metric(t("up_m_vocab"), f"{len(analysis.get('vocabulary_highlights', []))} {t('up_m_unit')}")
 
                 st.info(f"💬 {analysis.get('summary')}")
 
                 # ── 文法エラー（話者ラベル付き）────────────────
                 errors = analysis.get("grammar_errors", [])
-                st.subheader("📝 文法アドバイス / 文法建議")
+                st.subheader(t("up_h_grammar"))
                 if errors:
                     for err in errors:
                         spk = err.get("speaker", "A")
@@ -614,19 +781,19 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                             st.markdown(f'<span style="color:{color}">**{spk_label}**</span>', unsafe_allow_html=True)
                             st.write(err.get("explanation"))
                 else:
-                    st.success("文法エラーは見つかりませんでした！/ 沒有發現明顯文法錯誤！")
+                    st.success(t("up_no_grammar"))
 
                 vocab = analysis.get("vocabulary_highlights", [])
-                st.subheader("📚 学んだ単語 / 學到的單字")
+                st.subheader(t("up_h_vocab"))
                 if vocab:
                     for v in vocab:
                         pos_tag = f" `{v.get('part_of_speech')}`" if v.get('part_of_speech') else ""
                         with st.expander(f"**{v.get('word')}**{pos_tag}　{v.get('definition')}"):
-                            st.write(f"例文 / 例句：*{v.get('example')}*")
+                            st.write(f"{t('up_example')}*{v.get('example')}*")
 
                 tips = analysis.get("pronunciation_tips", [])
                 if tips:
-                    st.subheader("🗣️ 発音のヒント / 發音提示")
+                    st.subheader(t("up_h_pron"))
                     for tip in tips:
                         if isinstance(tip, dict):
                             spk = tip.get("speaker", "A")
@@ -645,7 +812,7 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
                     uploaded_file.name, transcript, analysis, diarized=diarized
                 )
                 st.download_button(
-                    label="📄 レポートをPDFでダウンロード / 下載 PDF 分析報告",
+                    label=t("up_pdf_btn"),
                     data=pdf_bytes,
                     file_name=f"report_{uploaded_file.name}.pdf",
                     mime="application/pdf",
@@ -659,7 +826,7 @@ if page == "🎙️ アップロード・分析 / 上傳分析":
 # ══════════════════════════════════════════════════════════════
 # 頁面二：新聞搜尋（聊天框介面）
 # ══════════════════════════════════════════════════════════════
-elif page == "📰 ニュース検索 / 新聞搜尋":
+elif page == "news":
     from news_search import fetch_news_with_gemini, TOEIC_LEVELS
     from database import add_vocabulary_manually
 
@@ -670,17 +837,17 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
         _pos = st.query_params.get("save_pos", "")
         if _w:
             add_vocabulary_manually(_w, _d, "", _pos)
-            st.toast(f"📚 「{_w}」を単語本に追加 / 已加入單字本", icon="✅")
+            st.toast(f"📚 「{_w}」{t('news_added')}", icon="✅")
         st.query_params.clear()
 
-    st.header("📰 英語ニュース検索 / 英文新聞搜尋")
+    st.header(t("news_header"))
 
     # 程度選擇放在最上方
     level_key = st.selectbox(
-        "📊 英語レベル / 英文程度",
+        t("news_level"),
         list(TOEIC_LEVELS.keys())
     )
-    st.caption("💡 任何語言輸入主題，Gemini 會幫你找真實新聞 / 何の言語でもOK、Geminiがリアルなニュースを検索します")
+    st.caption(t("news_caption"))
 
     # 初始化聊天記錄
     if "news_messages" not in st.session_state:
@@ -692,7 +859,7 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
             st.markdown(msg["content"], unsafe_allow_html=True)
 
     # 聊天輸入框（任何語言皆可）
-    if prompt := st.chat_input("ニュースのテーマを入力 / 輸入你想看的新聞主題... (e.g. AI, climate, economy)"):
+    if prompt := st.chat_input(t("news_chat_in")):
 
         # 顯示使用者訊息
         with st.chat_message("user"):
@@ -705,7 +872,7 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
                 try:
                     articles = fetch_news_with_gemini(prompt, level_key, count=1)
                 except Exception as e:
-                    st.error(f"搜尋失敗 / 検索失敗：{e}")
+                    st.error(f"{t('news_search_fail')}{e}")
                     st.stop()
 
             if not articles:
@@ -809,7 +976,7 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
 </style>
 
 <div id="tooltip"></div>
-<p class="tip">🔊 點擊單字可聽發音 / Tap a word to hear it &nbsp;｜&nbsp; 長按可加入單字本 / Long-press to save</p>
+<p class="tip">{t('news_tip_line')}</p>
 <div class="news-body">{words_html}</div>
 
 <script>
@@ -988,7 +1155,7 @@ function saveToVocab(word) {{
                 components.html(html_block, height=max(320, len(body) // 2))
 
                 # ── 複製文章按鈕 ──────────────────────────────────
-                with st.expander("📋 複製文章給朋友 / 記事をコピーする"):
+                with st.expander(t("news_copy_exp")):
                     st.code(body, language=None)
 
                 # ── 重點單字
@@ -1001,14 +1168,14 @@ function saveToVocab(word) {{
                 # ── 儲存 & 練習按鈕 ───────────────────────────────
                 btn_col1, btn_col2 = st.columns(2)
                 with btn_col1:
-                    if st.button("💾 儲存此新聞 / この記事を保存", key=f"save_news_{len(st.session_state.news_messages)}", use_container_width=True):
+                    if st.button(t("news_save_btn"), key=f"save_news_{len(st.session_state.news_messages)}", use_container_width=True):
                         import json as _j
                         save_news_article(title, source, date, body, _j.dumps(vocab, ensure_ascii=False))
-                        st.toast("✅ 新聞已儲存 / 記事を保存しました", icon="💾")
+                        st.toast(t("news_saved_toast"), icon="💾")
                 with btn_col2:
-                    if st.button("🎙️ 用這篇練習 / この記事で練習", key=f"practice_news_{len(st.session_state.news_messages)}", use_container_width=True, type="primary"):
+                    if st.button(t("news_practice_btn"), key=f"practice_news_{len(st.session_state.news_messages)}", use_container_width=True, type="primary"):
                         st.session_state["practice_news"] = {"title": title, "body": body}
-                        st.session_state["page_radio"] = "🎙️ アップロード・分析 / 上傳分析"
+                        st.session_state["page_idx"] = 3  # upload ページへ
                         st.rerun()
 
                 # 存入歷史記錄（純文字版本）
@@ -1021,14 +1188,14 @@ function saveToVocab(word) {{
 
     # ── 已儲存新聞清單 ─────────────────────────────────────────
     st.markdown("---")
-    st.subheader("💾 保存した記事 / 已儲存新聞")
+    st.subheader(t("news_h_saved"))
     saved_list = get_saved_news()
     if not saved_list:
-        st.info("まだ保存した記事はありません / 還沒有儲存的新聞")
+        st.info(t("news_no_saved"))
     else:
         for n in saved_list:
             with st.expander(f"📰 {n['title']}  ·  {n.get('date_str','')}"):
-                st.caption(f"來源 / ソース：{n.get('source','')}　｜　儲存於 {n.get('saved_at','')[:16]}")
+                st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{n.get('saved_at','')[:16]}")
                 st.write(n.get("body", ""))
                 import json as _j
                 vocab_saved = _j.loads(n.get("vocab_json") or "[]")
@@ -1038,31 +1205,31 @@ function saveToVocab(word) {{
                         st.markdown(f"- **{v.get('word')}** — {v.get('definition')}")
                 btn_c1, btn_c2 = st.columns(2)
                 with btn_c1:
-                    if st.button("🎙️ 用這篇練習 / 練習する", key=f"practice_saved_{n['id']}", use_container_width=True, type="primary"):
+                    if st.button(t("news_practice2"), key=f"practice_saved_{n['id']}", use_container_width=True, type="primary"):
                         st.session_state["practice_news"] = {"title": n["title"], "body": n.get("body", "")}
-                        st.session_state["page_radio"] = "🎙️ アップロード・分析 / 上傳分析"
+                        st.session_state["page_idx"] = 3  # upload ページへ
                         st.rerun()
                 with btn_c2:
-                    if st.button("🗑️ 刪除 / 削除", key=f"del_news_{n['id']}", use_container_width=True):
+                    if st.button(t("news_delete"), key=f"del_news_{n['id']}", use_container_width=True):
                         delete_saved_news(n["id"])
                         st.rerun()
 
 # ══════════════════════════════════════════════════════════════
 # 頁面三：歷史記錄
 # ══════════════════════════════════════════════════════════════
-elif page == "📚 履歴 / 歷史記錄":
+elif page == "history":
 
-    st.header("分析履歴 / 歷史分析記錄")
+    st.header(t("hist_header"))
 
     sessions = get_all_sessions()
 
     if not sessions:
-        st.info("まだ記録がありません。音声ファイルをアップロードしてください！/ 還沒有任何記錄，請先上傳音檔分析！")
+        st.info(t("hist_empty"))
     else:
-        st.write(f"合計 **{len(sessions)}** 件 / 共 **{len(sessions)}** 筆記錄")
+        st.write(f"{t('hist_count1')}**{len(sessions)}**{t('hist_count2')}")
 
         for s in sessions:
-            with st.expander(f"📅 {s['created_at']}　｜　{s['audio_file']}　｜　評価 / 評分：{s['score']} / 10"):
+            with st.expander(f"📅 {s['created_at']}　｜　{s['audio_file']}　｜　{t('hist_score')}{s['score']} / 10"):
                 st.info(f"💬 {s['summary']}")
 
                 analysis_h = json.loads(s['analysis_json']) if s.get('analysis_json') else {}
@@ -1070,7 +1237,7 @@ elif page == "📚 履歴 / 歷史記錄":
                 label_a_h = diarized_h.get("speaker_a_label", "Speaker A") if diarized_h else "Speaker A"
                 label_b_h = diarized_h.get("speaker_b_label", "Speaker B") if diarized_h else "Speaker B"
 
-                tab_t, tab_g, tab_p, tab_v = st.tabs(["💬 逐字稿 / 逐字起こし", "📝 文法 / 文法", "🗣️ 發音 / 発音", "📚 單字 / 単語"])
+                tab_t, tab_g, tab_p, tab_v = st.tabs([t("hist_tab_t"), t("hist_tab_g"), t("hist_tab_p"), t("hist_tab_v")])
 
                 with tab_t:
                     if diarized_h and diarized_h.get("segments"):
@@ -1104,7 +1271,7 @@ elif page == "📚 履歴 / 歷史記錄":
                                 unsafe_allow_html=True
                             )
                     else:
-                        st.success("文法錯誤なし / 沒有文法錯誤")
+                        st.success(t("hist_no_grammar"))
 
                 with tab_p:
                     tips_h = analysis_h.get("pronunciation_tips", [])
@@ -1124,7 +1291,7 @@ elif page == "📚 履歴 / 歷史記錄":
                             else:
                                 st.write(f"• {tip}")
                     else:
-                        st.info("發音提示なし / 無發音提示")
+                        st.info(t("hist_no_pron"))
 
                 with tab_v:
                     vocab_h = analysis_h.get("vocabulary_highlights", [])
@@ -1133,41 +1300,41 @@ elif page == "📚 履歴 / 歷史記錄":
                             pos_tag = f"　`{v.get('part_of_speech')}`" if v.get('part_of_speech') else ""
                             st.markdown(
                                 f'**{v.get("word","")}**{pos_tag}　{v.get("definition","")}<br>'
-                                f'<span style="color:#aaa;font-size:13px">例句：{v.get("example","")}</span>',
+                                f'<span style="color:#aaa;font-size:13px">{t("hist_example")}{v.get("example","")}</span>',
                                 unsafe_allow_html=True
                             )
                             st.markdown("---")
                     else:
-                        st.info("単語なし / 無單字")
+                        st.info(t("hist_no_vocab"))
 
                 col_space, col_btn = st.columns([4, 1])
                 with col_btn:
-                    if st.button("🗑️ 削除 / 刪除", key=f"delete_{s['id']}",
+                    if st.button(t("hist_delete"), key=f"delete_{s['id']}",
                                  type="secondary", use_container_width=True):
                         delete_session(s['id'])
-                        st.toast("削除しました / 已刪除", icon="🗑️")
+                        st.toast(t("hist_del_toast"), icon="🗑️")
                         st.rerun()
 
 # ══════════════════════════════════════════════════════════════
 # 頁面三：今日單字（閃卡複習模式）
 # ══════════════════════════════════════════════════════════════
-elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
+elif page == "today":  # noqa: E501
     from srs import update_vocabulary_after_review, QUALITY_MAP
     from database import add_vocabulary_manually
 
-    st.header("今日の単語復習 / 今日單字複習")
+    st.header(t("today_header"))
 
     # ── 手動新增單字（輸入單字，Gemini 自動補齊）────────────────
-    with st.expander("➕ 単語を手動追加 / 手動新增單字"):
+    with st.expander(t("today_add_exp")):
         new_word = st.text_input(
-            "英文單字 / English word",
+            t("today_word_in"),
             key="manual_word",
             placeholder="e.g. resilient"
         )
-        if st.button("🔍 自動查詢並加入單字本 / Auto-lookup & Add", key="manual_add_btn", use_container_width=True):
+        if st.button(t("today_add_btn"), key="manual_add_btn", use_container_width=True):
             if new_word.strip():
                 from analyze_func import lookup_word
-                with st.spinner(f"Gemini 查詢「{new_word.strip()}」中..."):
+                with st.spinner(f"{t('today_lookup')}「{new_word.strip()}」..."):
                     try:
                         info = lookup_word(new_word.strip())
                         definition = f"{info['definition_zh']} / {info['definition_jp']}"
@@ -1182,19 +1349,19 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                             f"  `{info.get('part_of_speech','')}`  "
                             f"{definition}"
                         )
-                        st.caption(f"例句：{info.get('example','')}")
+                        st.caption(f"{t('today_ex')}{info.get('example','')}")
                         st.rerun()
                     except Exception as e:
-                        st.error(f"查詢失敗：{e}")
+                        st.error(f"{t('today_lookup_fail')}{e}")
             else:
-                st.warning("請輸入單字 / 単語を入力してください")
+                st.warning(t("today_no_word"))
 
     st.markdown("---")
 
     due_words = get_vocabulary_due_today()
 
     if not due_words:
-        st.success("🎉 今日復習する単語はありません。よくできました！/ 今天沒有需要複習的單字，很棒！")
+        st.success(t("today_all_done"))
         st.balloons()
     else:
         if "card_index" not in st.session_state:
@@ -1206,9 +1373,9 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
         idx   = st.session_state.card_index
 
         if idx >= total:
-            st.success(f"🎉 今日の {total} 単語をすべて完了！/ 今天的 {total} 個單字全部複習完畢！")
+            st.success(f"{t('today_done1')}{total}{t('today_done2')}")
             st.balloons()
-            if st.button("最初から / 重新開始"):
+            if st.button(t("today_restart")):
                 st.session_state.card_index = 0
                 st.session_state.show_answer = False
                 st.rerun()
@@ -1216,23 +1383,23 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
         else:
             # ── TODAY / DONE / 残り 三欄メトリクス ──
             m1, m2, m3 = st.columns(3)
-            m1.metric("TODAY / 今日", total)
-            m2.metric("DONE / 已複習", idx)
-            m3.metric("残り / 剩餘", total - idx)
+            m1.metric(t("today_m_today"), total)
+            m2.metric(t("today_m_done"), idx)
+            m3.metric(t("today_m_left"), total - idx)
 
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-            st.progress((idx) / total, text=f"進捗 / 進度：{idx} / {total}")
+            st.progress((idx) / total, text=f"{t('today_progress')}{idx} / {total}")
             st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
             word = due_words[idx]
 
             source = word.get("source", "vocabulary")
             source_label = {
-                "vocabulary":    "📖 重點單字",
-                "pronunciation": "🗣️ 發音錯誤",
-                "hesitant":      "💭 猶豫單字",
-                "manual":        "✏️ 手動新增",
-            }.get(source, "📖 重點單字")
+                "vocabulary":    t("today_src_vocab"),
+                "pronunciation": t("today_src_pron"),
+                "hesitant":      t("today_src_hesit"),
+                "manual":        t("today_src_manual"),
+            }.get(source, t("today_src_vocab"))
             pos = word.get("part_of_speech", "")
             pos_badge_html = f'<code style="font-size:14px;background:#F5F5F5;color:#888;padding:2px 8px;margin-left:8px;vertical-align:middle;">{pos}</code>' if pos else ""
             # ── 単語カード（中央寄せ・枠付き）。発音ボタンは下に speak_button で別途描画 ──
@@ -1244,14 +1411,14 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 f'<div style="font-size:40px;font-weight:300;letter-spacing:.12em;color:#1A1A1A;">'
                 f'{word["word"]}{pos_badge_html}</div>'
                 f'<div style="font-size:11px;color:#CCC;letter-spacing:.1em;margin-top:14px;">'
-                f'復習 {word["review_count"]} 回　·　難易度 {word["ease_factor"]}</div>'
+                f'{t("today_review_n")}{word["review_count"]}{t("today_review_unit")}　·　{t("today_ease")}{word["ease_factor"]}</div>'
                 f'</div>',
                 unsafe_allow_html=True
             )
             # 発音ボタン（実際に音が出る）— カード下端に配置
             bcol = st.columns([1, 1, 1])[1]
             with bcol:
-                speak_button(word["word"], label="🔊 發音 / Listen", height=46)
+                speak_button(word["word"], label=t("today_listen"), height=46)
             st.markdown(
                 '<div style="border:1px solid #E8E8E8;border-top:none;border-radius:0 0 2px 2px;'
                 'height:16px;margin:0 0 8px;background:#FFF;"></div>',
@@ -1259,15 +1426,15 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
             )
 
             if not st.session_state.show_answer:
-                if st.button("👁️ 答えを見る / 顯示答案", use_container_width=True, type="primary"):
+                if st.button(t("today_show"), use_container_width=True, type="primary"):
                     st.session_state.show_answer = True
                     st.rerun()
 
             else:
-                st.info(f"**意味 / 中文：** {word['definition']}")
-                st.write(f"**例文 / 例句：** *{word['example']}*")
+                st.info(f"**{t('today_meaning')}** {word['definition']}")
+                st.write(f"**{t('today_ex_label')}** *{word['example']}*")
 
-                st.markdown("**どれだけ覚えていますか？/ 你記得多少？**")
+                st.markdown(f"**{t('today_how_much')}**")
                 items = list(QUALITY_MAP.items())
                 row1_cols = st.columns(2)
                 row2_cols = st.columns(2)
@@ -1283,23 +1450,23 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
 
     # ── 單字總表 ──────────────────────────────────────────────────
     st.markdown("---")
-    st.subheader("📋 単語総リスト / 單字總表")
+    st.subheader(t("today_h_list"))
 
     all_vocab = get_all_vocabulary()
     if not all_vocab:
-        st.info("還沒有單字記錄 / 単語がありません")
+        st.info(t("today_no_list"))
     else:
         source_labels = {
-            "vocabulary":    "📖 重點",
-            "pronunciation": "🗣️ 發音",
-            "hesitant":      "💭 猶豫",
-            "manual":        "✏️ 手動",
+            "vocabulary":    t("today_lbl_vocab"),
+            "pronunciation": t("today_lbl_pron"),
+            "hesitant":      t("today_lbl_hesit"),
+            "manual":        t("today_lbl_manual"),
         }
 
-        search_q = st.text_input("🔍 搜尋單字 / 単語を検索", placeholder="e.g. resilient", key="vocab_search")
+        search_q = st.text_input(t("today_search"), placeholder="e.g. resilient", key="vocab_search")
 
         filtered = [v for v in all_vocab if search_q.lower() in v["word"].lower()] if search_q else all_vocab
-        st.caption(f"共 {len(filtered)} 個單字 / 合計 {len(filtered)} 単語")
+        st.caption(f"{t('today_cnt1')}{len(filtered)}{t('today_cnt2')}")
 
         for v in filtered:
             col_w, col_tts, col_d, col_s, col_del = st.columns([2, 0.8, 3.4, 1.8, 1])
@@ -1324,6 +1491,6 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 else:
                     st.caption(src)
             with col_del:
-                if st.button("🗑️", key=f"del_vocab_{v['id']}", help="刪除此單字"):
+                if st.button("🗑️", key=f"del_vocab_{v['id']}", help=t("today_del_help")):
                     delete_vocabulary(v["id"])
                     st.rerun()
