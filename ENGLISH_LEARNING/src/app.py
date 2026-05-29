@@ -50,10 +50,28 @@ def speak_button(word, label="🔊", height=44, font_size=13):
     )
 
 # ══════════════════════════════════════════════════════════════
+# 頁面基本設定（set_page_config は最初の st 命令でなければならない）
+# ══════════════════════════════════════════════════════════════
+st.set_page_config(
+    page_title="英文対話分析 / 英文對話分析",
+    page_icon="🎙️",
+    layout="centered"
+)
+
+# ══════════════════════════════════════════════════════════════
 # 介面語言切換（ja = 日本語 / zh = 繁體中文）
 # ══════════════════════════════════════════════════════════════
 if "lang" not in st.session_state:
     st.session_state["lang"] = "ja"
+
+# 言語セレクタは「タイトルより前」に実行する必要がある。
+# （Streamlit は上から実行するため、後ろで切り替えるとタイトルが1テンポ遅れる）
+_lang_choice = st.sidebar.radio(
+    "Language", ["日本語", "中文"],
+    index=0 if st.session_state["lang"] == "ja" else 1,
+    horizontal=True, label_visibility="collapsed", key="lang_sel",
+)
+st.session_state["lang"] = "ja" if _lang_choice == "日本語" else "zh"
 
 LANG = {
     # ── ナビ / 導覽 ──
@@ -209,15 +227,6 @@ LANG = {
 def t(key):
     return LANG.get(key, {}).get(st.session_state["lang"], key)
 
-
-# ══════════════════════════════════════════════════════════════
-# 頁面基本設定
-# ══════════════════════════════════════════════════════════════
-st.set_page_config(
-    page_title="英文対話分析システム / 英文對話分析系統",
-    page_icon="🎙️",
-    layout="centered"
-)
 
 st.markdown(
     '<div style="padding:4px 0 20px;border-bottom:1px solid #E8E8E8;margin-bottom:28px;">'
@@ -610,11 +619,6 @@ h3::before {
 # 側邊欄：導覽選單
 # ══════════════════════════════════════════════════════════════
 with st.sidebar:
-    lang_choice = st.radio("Language", ["日本語", "中文"],
-        index=0 if st.session_state["lang"] == "ja" else 1,
-        horizontal=True, label_visibility="collapsed", key="lang_sel")
-    st.session_state["lang"] = "ja" if lang_choice == "日本語" else "zh"
-
     st.markdown(
         '<div style="padding:4px 0 8px;">'
         f'<div style="font-size:15px;font-weight:500;color:#1A1A1A;letter-spacing:.05em;">🎙 {t("side_subtitle")}</div>'
