@@ -1050,7 +1050,9 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
             m2.metric("DONE / 已複習", idx)
             m3.metric("残り / 剩餘", total - idx)
 
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
             st.progress((idx) / total, text=f"進捗 / 進度：{idx} / {total}")
+            st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
             word = due_words[idx]
 
