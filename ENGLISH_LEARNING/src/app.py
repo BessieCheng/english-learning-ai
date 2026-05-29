@@ -10,6 +10,7 @@ import sys
 import json
 import tempfile
 import streamlit as st
+import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -19,6 +20,34 @@ from database import (init_database, get_all_sessions, get_vocabulary_due_today,
 
 load_dotenv()
 init_database()
+
+
+# ══════════════════════════════════════════════════════════════
+# 発音ボタン（components.html で iframe 内 JS を実行）
+#   st.markdown の onclick は DOMPurify で除去されるため使えない。
+#   iOS は cancel→speak を同一ユーザー操作内で同期実行（setTimeout 不可）。
+# ══════════════════════════════════════════════════════════════
+def speak_button(word, label="🔊", height=44, font_size=13):
+    safe = (word or "").replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
+    components.html(
+        f"""
+<button onclick="(function(){{
+  if(!window.speechSynthesis) return;
+  var u = new SpeechSynthesisUtterance('{safe}');
+  u.lang='en-US'; u.rate=0.85; u.volume=1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}})()" style="
+  font-family:'Noto Sans JP',sans-serif;
+  background:#F5F5F5; color:#555;
+  border:1px solid #E0E0E0; border-radius:2px;
+  padding:6px 14px; font-size:{font_size}px; letter-spacing:.08em;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+" onmouseover="this.style.background='#ECECEC'"
+  onmouseout="this.style.background='#F5F5F5'">{label}</button>
+""",
+        height=height,
+    )
 
 # ══════════════════════════════════════════════════════════════
 # 頁面基本設定
@@ -35,9 +64,6 @@ st.markdown(
     '🎙️ 英文対話分析・スマート単語帳</div>'
     '<div style="font-size:14px;font-weight:400;color:#888;letter-spacing:.03em;margin-top:2px;">'
     '英文對話分析與智慧單字本</div>'
-    '<div style="font-size:11px;color:#BBB;letter-spacing:.08em;margin-top:10px;line-height:1.6;">'
-    '英語会話の録音をアップロードして、AIが文法分析・単語整理します<br>'
-    '上傳英文對話錄音，AI 幫你分析文法、整理單字</div>'
     '</div>',
     unsafe_allow_html=True
 )
@@ -398,6 +424,24 @@ h3::before {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #DDD; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* サイドバー開閉ボタンの material icon 文字化対策（keyboard_double_arrow 等を隠す）*/
+[data-testid="stSidebarCollapseButton"] span,
+[data-testid="collapsedControl"] span,
+[data-testid="stSidebarCollapsedControl"] button span {
+    font-family: 'Material Symbols Rounded','Material Symbols Outlined','Material Icons' !important;
+}
+/* それでも文字化けする場合は隠して ☰ を代わりに表示 */
+[data-testid="collapsedControl"] button,
+[data-testid="stSidebarCollapsedControl"] button {
+    font-size: 0 !important;
+}
+[data-testid="collapsedControl"] button::after,
+[data-testid="stSidebarCollapsedControl"] button::after {
+    content: '☰' !important;
+    font-size: 22px !important;
+    color: #555 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1191,29 +1235,26 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
             }.get(source, "📖 重點單字")
             pos = word.get("part_of_speech", "")
             pos_badge_html = f'<code style="font-size:14px;background:#F5F5F5;color:#888;padding:2px 8px;margin-left:8px;vertical-align:middle;">{pos}</code>' if pos else ""
-            card_word_js = word['word'].replace("'", "\\'").replace('"', '\\"')
-            card_tts = (
-                f"var _s=window.speechSynthesis;if(_s){{var _u=new SpeechSynthesisUtterance('{card_word_js}');"
-                f"_u.lang='en-US';_u.rate=0.85;_u.volume=1;"
-                f"if(_s.speaking||_s.pending){{_s.cancel();setTimeout(function(){{_s.speak(_u);}},80);}}else{{_s.speak(_u);}}}}"
-            )
-            # ── 単語カード（中央寄せ・枠付き）──
+            # ── 単語カード（中央寄せ・枠付き）。発音ボタンは下に speak_button で別途描画 ──
             st.markdown(
                 f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid #4A7C59;'
-                f'border-radius:2px;padding:48px 32px;text-align:center;margin:8px 0 4px;">'
+                f'border-radius:2px 2px 0 0;border-bottom:none;padding:48px 32px 24px;text-align:center;margin:8px 0 0;">'
                 f'<div style="font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:20px;">'
                 f'{source_label}</div>'
                 f'<div style="font-size:40px;font-weight:300;letter-spacing:.12em;color:#1A1A1A;">'
                 f'{word["word"]}{pos_badge_html}</div>'
-                f'<div style="margin-top:20px;">'
-                f'<span onclick="{card_tts}" '
-                f'style="cursor:pointer;font-size:13px;padding:6px 16px;border-radius:2px;'
-                f'background:#F5F5F5;border:1px solid #E0E0E0;color:#555;'
-                f'letter-spacing:.1em;-webkit-tap-highlight-color:transparent;" '
-                f'title="發音">🔊 發音 / Listen</span></div>'
-                f'<div style="font-size:11px;color:#CCC;letter-spacing:.1em;margin-top:18px;">'
+                f'<div style="font-size:11px;color:#CCC;letter-spacing:.1em;margin-top:14px;">'
                 f'復習 {word["review_count"]} 回　·　難易度 {word["ease_factor"]}</div>'
                 f'</div>',
+                unsafe_allow_html=True
+            )
+            # 発音ボタン（実際に音が出る）— カード下端に配置
+            bcol = st.columns([1, 1, 1])[1]
+            with bcol:
+                speak_button(word["word"], label="🔊 發音 / Listen", height=46)
+            st.markdown(
+                '<div style="border:1px solid #E8E8E8;border-top:none;border-radius:0 0 2px 2px;'
+                'height:16px;margin:0 0 8px;background:#FFF;"></div>',
                 unsafe_allow_html=True
             )
 
@@ -1261,24 +1302,15 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
         st.caption(f"共 {len(filtered)} 個單字 / 合計 {len(filtered)} 単語")
 
         for v in filtered:
-            col_w, col_d, col_s, col_del = st.columns([2, 4, 2, 1])
+            col_w, col_tts, col_d, col_s, col_del = st.columns([2, 0.8, 3.4, 1.8, 1])
             with col_w:
                 pos_html = f' <code style="font-size:0.7em;background:#F5F5F5;color:#888;padding:1px 5px;">{v["part_of_speech"]}</code>' if v.get("part_of_speech") else ""
-                word_js = v['word'].replace("'", "\\'").replace('"', '\\"')
-                word_tts = (
-                    f"var _s=window.speechSynthesis;if(_s){{var _u=new SpeechSynthesisUtterance('{word_js}');"
-                    f"_u.lang='en-US';_u.rate=0.85;_u.volume=1;"
-                    f"if(_s.speaking||_s.pending){{_s.cancel();setTimeout(function(){{_s.speak(_u);}},80);}}else{{_s.speak(_u);}}}}"
-                )
                 st.markdown(
-                    f'<span style="font-weight:500;color:#1A1A1A;">{v["word"]}</span>{pos_html}&nbsp;'
-                    f'<span onclick="{word_tts}" '
-                    f'style="cursor:pointer;font-size:0.9em;padding:2px 6px;border-radius:2px;'
-                    f'background:#F5F5F5;border:1px solid #E8E8E8;color:#888;'
-                    f'-webkit-tap-highlight-color:transparent;" '
-                    f'title="發音">🔊</span>',
+                    f'<div style="padding-top:6px;"><span style="font-weight:500;color:#1A1A1A;">{v["word"]}</span>{pos_html}</div>',
                     unsafe_allow_html=True
                 )
+            with col_tts:
+                speak_button(v["word"], label="🔊", height=40, font_size=14)
             with col_d:
                 if v.get("source") == "pronunciation":
                     st.caption(v.get("example", ""))
