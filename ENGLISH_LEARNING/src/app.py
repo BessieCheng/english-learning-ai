@@ -26,11 +26,97 @@ init_database()
 st.set_page_config(
     page_title="英文対話分析システム / 英文對話分析系統",
     page_icon="🎙️",
-    layout="wide"
+    layout="centered"
 )
 
 st.title("🎙️ 英文対話分析・スマート単語帳 / 英文對話分析與智慧單字本")
 st.caption("英語会話の録音をアップロードして、AIが文法分析・単語整理します / 上傳英文對話錄音，AI 幫你分析文法、整理單字")
+
+# ── 手機響應式 CSS ─────────────────────────────────────────────
+st.markdown("""
+<style>
+/* 防止水平溢出 */
+.main .block-container {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* 手機螢幕 (768px 以下) */
+@media (max-width: 768px) {
+    h1 { font-size: 1.3rem !important; line-height: 1.4 !important; }
+    h2 { font-size: 1.15rem !important; }
+    h3 { font-size: 1.05rem !important; }
+
+    /* 所有按鈕手機友善大小 */
+    .stButton > button {
+        font-size: 13px !important;
+        padding: 8px 10px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        line-height: 1.3 !important;
+        min-height: 40px !important;
+    }
+
+    /* expander 標題縮小 */
+    [data-testid="stExpander"] summary p,
+    .streamlit-expanderHeader p {
+        font-size: 13px !important;
+    }
+
+    /* metric 卡片 */
+    [data-testid="stMetricValue"] { font-size: 1.5rem !important; }
+    [data-testid="stMetricLabel"] { font-size: 12px !important; }
+
+    /* caption 縮小 */
+    .stCaption p { font-size: 11px !important; }
+
+    /* 防止欄位內容溢出 */
+    [data-testid="column"] {
+        overflow: hidden;
+        min-width: 0;
+    }
+
+    /* 防止 code block 溢出 */
+    code, pre { white-space: pre-wrap !important; word-break: break-word !important; }
+
+    /* selectbox / text_input 撐滿寬度 */
+    [data-testid="stSelectbox"],
+    [data-testid="stTextInput"] { width: 100% !important; }
+
+    /* 側邊欄字體 */
+    [data-testid="stSidebar"] { font-size: 14px; }
+
+    /* radio 選項間距 */
+    [data-testid="stSidebar"] .stRadio label { padding: 6px 0; }
+
+    /* 進度條文字 */
+    [data-testid="stProgress"] p { font-size: 12px !important; }
+
+    /* tab 字體 */
+    [data-testid="stTabs"] button p { font-size: 12px !important; }
+}
+
+/* 極小螢幕 (375px 以下) */
+@media (max-width: 375px) {
+    .main .block-container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    h1 { font-size: 1.1rem !important; }
+}
+</style>
+<script>
+function speakWord(w) {
+  const u = new SpeechSynthesisUtterance(w);
+  u.lang = 'en-US'; u.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+</script>
+""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
 # 側邊欄：導覽選單
@@ -317,12 +403,15 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
 
                 html_block = f"""
 <style>
+  * {{ box-sizing: border-box; }}
   body {{ margin: 0; padding: 0; background: transparent; }}
   .news-body {{
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 16px);
     line-height: 2.0;
     color: #e8e8e8;
     font-family: Georgia, serif;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }}
   .w {{
     cursor: pointer;
@@ -330,8 +419,10 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
     padding: 1px 3px;
     transition: background 0.15s;
     position: relative;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }}
-  .w:hover {{ background: #2a5ea8; color: #fff; }}
+  .w:hover, .w.active {{ background: #2a5ea8; color: #fff; }}
   #tooltip {{
     position: fixed;
     background: #1e2a3a;
@@ -339,18 +430,18 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
     border: 1px solid #3a6ea8;
     border-radius: 8px;
     padding: 7px 12px;
-    font-size: 14px;
+    font-size: clamp(12px, 3.5vw, 14px);
     line-height: 1.6;
     pointer-events: none;
     display: none;
     z-index: 9999;
-    max-width: 220px;
+    max-width: min(220px, 80vw);
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   }}
-  #tooltip .en {{ font-weight: bold; color: #7eb8f7; font-size: 15px; }}
+  #tooltip .en {{ font-weight: bold; color: #7eb8f7; font-size: clamp(13px, 4vw, 15px); }}
   #tooltip .jp {{ color: #f9ca74; }}
   #tooltip .zh {{ color: #a8e6a3; }}
-  .tip {{ font-size: 12px; color: #888; margin-bottom: 6px; }}
+  .tip {{ font-size: clamp(11px, 3vw, 12px); color: #888; margin-bottom: 6px; }}
   #ctx-menu {{
     position: fixed;
     background: #1e2a3a;
@@ -358,22 +449,22 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
     border-radius: 10px;
     padding: 12px;
     z-index: 99999;
-    min-width: 220px;
+    width: min(260px, 85vw);
     box-shadow: 0 6px 20px rgba(0,0,0,0.6);
   }}
-  #ctx-menu .ctx-word {{ color:#7eb8f7; font-weight:bold; font-size:16px; margin-bottom:8px; }}
+  #ctx-menu .ctx-word {{ color:#7eb8f7; font-weight:bold; font-size:clamp(14px,4vw,16px); margin-bottom:8px; }}
   #ctx-menu select, #ctx-menu input {{
     width: 100%; background: #0e1621; color: #fff;
     border: 1px solid #3a6ea8; border-radius: 4px;
-    padding: 5px 7px; font-size: 13px;
+    padding: 8px 7px; font-size: clamp(12px,3.5vw,13px);
     box-sizing: border-box; margin-bottom: 6px;
   }}
   #ctx-menu button {{
     width: 100%; background: #29629e; color: #fff;
     border: none; border-radius: 5px;
-    padding: 7px; cursor: pointer; font-size: 14px;
+    padding: 10px; cursor: pointer; font-size: clamp(13px,3.5vw,14px);
   }}
-  #ctx-menu button:hover {{ background: #3a7abf; }}
+  #ctx-menu button:hover, #ctx-menu button:active {{ background: #3a7abf; }}
   #ctx-saved {{
     color: #4caf82; font-size: 13px; text-align: center;
     margin-top: 6px; display: none;
@@ -381,23 +472,15 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
 </style>
 
 <div id="tooltip"></div>
-<p class="tip">🔊 Hover over any word — hear pronunciation + see Japanese / Chinese translation</p>
+<p class="tip">🔊 點擊單字可聽發音 / Tap a word to hear it &nbsp;｜&nbsp; 長按可加入單字本 / Long-press to save</p>
 <div class="news-body">{words_html}</div>
 
 <script>
 const GLOSSARY = {glossary_js};
+const isMobile = ('ontouchstart' in window);
 
-function onHover(el) {{
+function showTooltip(el, x, y) {{
   const word = el.dataset.word;
-
-  // 發音
-  const utt = new SpeechSynthesisUtterance(word);
-  utt.lang = 'en-US';
-  utt.rate = 0.85;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utt);
-
-  // tooltip
   const entry = GLOSSARY[word];
   const tip = document.getElementById('tooltip');
   if (entry) {{
@@ -405,18 +488,35 @@ function onHover(el) {{
       '<span class="en">' + el.innerText + '</span><br>' +
       '<span class="jp">🇯🇵 ' + entry.jp + '</span><br>' +
       '<span class="zh">🇹🇼 ' + entry.zh + '</span>';
-    tip.style.display = 'block';
   }} else {{
     tip.innerHTML = '<span class="en">' + el.innerText + '</span>';
-    tip.style.display = 'block';
   }}
+  tip.style.display = 'block';
+  const tipW = tip.offsetWidth || 220;
+  const tipH = tip.offsetHeight || 80;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  // 靠右側時往左展開，避免遮擋
+  let tx = (x + 14 + tipW > vw - 8) ? (x - tipW - 8) : (x + 14);
+  let ty = (y + tipH > vh - 8) ? (vh - tipH - 8) : (y - 10);
+  tip.style.left = Math.max(4, tx) + 'px';
+  tip.style.top  = Math.max(4, ty) + 'px';
+}}
+
+function onHover(el) {{
+  if (isMobile) return;
+  const word = el.dataset.word;
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.lang = 'en-US'; utt.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
 }}
 
 document.addEventListener('mousemove', function(e) {{
+  if (isMobile) return;
   const tip = document.getElementById('tooltip');
   if (tip.style.display === 'block') {{
-    tip.style.left = (e.clientX + 14) + 'px';
-    tip.style.top  = (e.clientY - 10) + 'px';
+    showTooltip(document.querySelector('.w.active') || e.target, e.clientX, e.clientY);
   }}
 }});
 
@@ -426,7 +526,58 @@ document.addEventListener('mouseout', function(e) {{
   }}
 }});
 
-// ── 右鍵選單 ───────────────────────────────────────────
+// ── 行動裝置：點擊播放發音 + 長按開啟選單 ──────────────
+let pressTimer = null;
+let pressEl = null;
+
+document.querySelectorAll('.w').forEach(function(el) {{
+  // 桌機 hover tooltip
+  el.addEventListener('mouseenter', function(e) {{
+    if (!isMobile) showTooltip(el, e.clientX, e.clientY);
+  }});
+  el.addEventListener('mouseleave', function() {{
+    if (!isMobile) document.getElementById('tooltip').style.display = 'none';
+  }});
+
+  // 觸控：點擊 = 發音，長按 = 右鍵選單
+  el.addEventListener('touchstart', function(e) {{
+    pressEl = el;
+    el.classList.add('active');
+    const touch = e.touches[0];
+
+    // 點擊播放發音
+    const utt = new SpeechSynthesisUtterance(el.dataset.word);
+    utt.lang = 'en-US'; utt.rate = 0.85;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utt);
+
+    // 顯示 tooltip
+    showTooltip(el, touch.clientX, touch.clientY);
+
+    // 長按觸發選單
+    pressTimer = setTimeout(function() {{
+      e.preventDefault();
+      document.getElementById('tooltip').style.display = 'none';
+      onRightClick({{clientX: touch.clientX, clientY: touch.clientY, preventDefault: function(){{}} }}, el);
+    }}, 600);
+  }}, {{passive: true}});
+
+  el.addEventListener('touchend', function() {{
+    clearTimeout(pressTimer);
+    if (pressEl) pressEl.classList.remove('active');
+    setTimeout(function() {{
+      document.getElementById('tooltip').style.display = 'none';
+    }}, 1200);
+  }});
+
+  el.addEventListener('touchmove', function() {{
+    clearTimeout(pressTimer);
+    if (pressEl) pressEl.classList.remove('active');
+    document.getElementById('tooltip').style.display = 'none';
+  }});
+}});
+
+// ── 右鍵選單（桌機右鍵 / 行動裝置長按）────────────────
 function onRightClick(e, el) {{
   e.preventDefault();
   document.getElementById('tooltip').style.display = 'none';
@@ -455,19 +606,25 @@ function onRightClick(e, el) {{
     <div id="ctx-saved">✅ 已加入！</div>
   `;
 
-  // 防止跑出畫面
-  const x = Math.min(e.clientX, window.innerWidth - 240);
-  const y = Math.min(e.clientY, window.innerHeight - 180);
-  menu.style.left = x + 'px';
-  menu.style.top  = y + 'px';
+  const menuW = Math.min(260, window.innerWidth * 0.85);
+  const menuH = 200;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const x = (e.clientX + menuW > vw - 8) ? (e.clientX - menuW - 4) : e.clientX;
+  const y = (e.clientY + menuH > vh - 8) ? (vh - menuH - 8) : e.clientY;
+  menu.style.left = Math.max(4, x) + 'px';
+  menu.style.top  = Math.max(4, y) + 'px';
   document.body.appendChild(menu);
 
-  // 點其他地方關閉
   setTimeout(() => {{
-    document.addEventListener('click', () => {{
+    document.addEventListener('touchstart', function closeMenu(ev) {{
+      if (!menu.contains(ev.target)) {{ menu.remove(); document.removeEventListener('touchstart', closeMenu); }}
+    }});
+    document.addEventListener('click', function closeMenu2() {{
       const m = document.getElementById('ctx-menu');
       if (m) m.remove();
-    }}, {{once: true}});
+      document.removeEventListener('click', closeMenu2);
+    }});
   }}, 100);
 }}
 
@@ -730,8 +887,17 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
             }.get(source, "📖 重點單字")
             st.caption(source_label)
             pos = word.get("part_of_speech", "")
-            pos_badge = f" `{pos}`" if pos else ""
-            st.markdown(f"## {word['word']}{pos_badge}")
+            pos_badge_html = f' <code style="font-size:0.65em">{pos}</code>' if pos else ""
+            card_word_js = word['word'].replace("'", "\\'").replace('"', '\\"')
+            st.markdown(
+                f'<h2 style="margin-bottom:0">{word["word"]}{pos_badge_html}&nbsp;'
+                f'<span onclick="speakWord(\'{card_word_js}\')" '
+                f'style="cursor:pointer;font-size:0.7em;padding:3px 8px;border-radius:6px;'
+                f'background:#1e3a5c;border:1px solid #3a6ea8;vertical-align:middle;'
+                f'-webkit-tap-highlight-color:transparent;" '
+                f'title="發音 / Pronunciation">🔊 發音</span></h2>',
+                unsafe_allow_html=True
+            )
             st.caption(f"復習回数 / 已複習 {word['review_count']} 回　｜　難易度 / 難易係數：{word['ease_factor']}")
 
             if not st.session_state.show_answer:
@@ -744,11 +910,12 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 st.write(f"**例文 / 例句：** *{word['example']}*")
 
                 st.markdown("**どれだけ覚えていますか？/ 你記得多少？**")
-                col1, col2, col3, col4 = st.columns(4)
+                items = list(QUALITY_MAP.items())
+                row1_cols = st.columns(2)
+                row2_cols = st.columns(2)
+                all_cols = row1_cols + row2_cols
 
-                for col, (label, quality) in zip(
-                    [col1, col2, col3, col4], QUALITY_MAP.items()
-                ):
+                for col, (label, quality) in zip(all_cols, items):
                     with col:
                         if st.button(label, use_container_width=True):
                             update_vocabulary_after_review(word["id"], quality)
@@ -779,8 +946,18 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
         for v in filtered:
             col_w, col_d, col_s, col_del = st.columns([2, 4, 2, 1])
             with col_w:
-                pos = f" `{v['part_of_speech']}`" if v.get("part_of_speech") else ""
-                st.markdown(f"**{v['word']}**{pos}")
+                pos_html = f' <code style="font-size:0.75em">{v["part_of_speech"]}</code>' if v.get("part_of_speech") else ""
+                word_js = v['word'].replace("'", "\\'").replace('"', '\\"')
+                st.markdown(
+                    f'<b>{v["word"]}</b>{pos_html}&nbsp;'
+                    f'<span onclick="speakWord(\'{word_js}\')" '
+                    f'style="cursor:pointer;font-size:1.1em;padding:2px 5px;border-radius:4px;'
+                    f'transition:background 0.15s;-webkit-tap-highlight-color:transparent;" '
+                    f'onmouseover="this.style.background=\'#2a4a6a\'" '
+                    f'onmouseout="this.style.background=\'transparent\'" '
+                    f'title="發音 / Pronunciation">🔊</span>',
+                    unsafe_allow_html=True
+                )
             with col_d:
                 if v.get("source") == "pronunciation":
                     st.caption(v.get("example", ""))
