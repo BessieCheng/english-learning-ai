@@ -42,6 +42,12 @@ html, body, [data-testid="stAppViewContainer"] {
     background-color: #FAFAFA !important;
     color: #1A1A1A !important;
 }
+/* 上部ツールバーを透明に（黒帯を消す） */
+[data-testid="stHeader"] {
+    background: transparent !important;
+    background-color: rgba(0,0,0,0) !important;
+}
+[data-testid="stToolbar"] { background: transparent !important; }
 [data-testid="stAppViewContainer"] {
     font-family: 'Noto Sans JP', 'Helvetica Neue', sans-serif !important;
     font-weight: 300;
@@ -901,13 +907,13 @@ elif page == "📚 履歴 / 歷史記錄":
                         for seg in diarized_h["segments"]:
                             spk = seg.get("speaker", "A")
                             label = label_a_h if spk == "A" else label_b_h
-                            color_bg = "#1a3a5c" if spk == "A" else "#1a3d2b"
-                            color_bd = "#4a9eff" if spk == "A" else "#4caf82"
+                            color_bg = "#F0F5FA" if spk == "A" else "#F0F7F2"
+                            color_bd = "#6B8FC4" if spk == "A" else "#4A7C59"
                             st.markdown(
-                                f'<div style="background:{color_bg};border-left:4px solid {color_bd};'
-                                f'padding:6px 10px;margin:3px 0;border-radius:4px;">'
-                                f'<b style="color:{color_bd}">{label}</b><br>'
-                                f'<span style="color:#e8e8e8;font-size:13px">{seg.get("text","")}</span></div>',
+                                f'<div style="background:{color_bg};border-left:3px solid {color_bd};'
+                                f'padding:8px 12px;margin:4px 0;border-radius:2px;">'
+                                f'<b style="color:{color_bd};font-size:12px;letter-spacing:.05em">{label}</b><br>'
+                                f'<span style="color:#333;font-size:13px">{seg.get("text","")}</span></div>',
                                 unsafe_allow_html=True
                             )
                     else:
@@ -919,12 +925,12 @@ elif page == "📚 履歴 / 歷史記錄":
                         for err in errors_h:
                             spk = err.get("speaker", "A")
                             spk_label = label_a_h if spk == "A" else label_b_h
-                            color = "#4a9eff" if spk == "A" else "#4caf82"
+                            color = "#6B8FC4" if spk == "A" else "#4A7C59"
                             st.markdown(
                                 f'<div style="border-left:3px solid {color};padding:6px 10px;margin:6px 0;">'
                                 f'<span style="color:{color};font-size:12px">[{spk_label}]</span><br>'
                                 f'❌ <b>{err.get("original")}</b>　→　✅ <b>{err.get("correction")}</b><br>'
-                                f'<span style="color:#aaa;font-size:13px">{err.get("explanation","")}</span></div>',
+                                f'<span style="color:#888;font-size:13px">{err.get("explanation","")}</span></div>',
                                 unsafe_allow_html=True
                             )
                     else:
@@ -937,12 +943,12 @@ elif page == "📚 履歴 / 歷史記錄":
                             if isinstance(tip, dict):
                                 spk = tip.get("speaker", "A")
                                 spk_label = label_a_h if spk == "A" else label_b_h
-                                color = "#4a9eff" if spk == "A" else "#4caf82"
+                                color = "#6B8FC4" if spk == "A" else "#4A7C59"
                                 st.markdown(
                                     f'<div style="border-left:3px solid {color};padding:6px 10px;margin:6px 0;">'
                                     f'<span style="color:{color};font-size:12px">[{spk_label}]</span>　'
                                     f'<b>{tip.get("example","")}</b><br>'
-                                    f'<span style="color:#aaa;font-size:13px">{tip.get("tip","")}</span></div>',
+                                    f'<span style="color:#888;font-size:13px">{tip.get("tip","")}</span></div>',
                                     unsafe_allow_html=True
                                 )
                             else:
@@ -1038,11 +1044,16 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 st.rerun()
 
         else:
+            # ── TODAY / DONE / 残り 三欄メトリクス ──
+            m1, m2, m3 = st.columns(3)
+            m1.metric("TODAY / 今日", total)
+            m2.metric("DONE / 已複習", idx)
+            m3.metric("残り / 剩餘", total - idx)
+
             st.progress((idx) / total, text=f"進捗 / 進度：{idx} / {total}")
 
             word = due_words[idx]
 
-            st.markdown("---")
             source = word.get("source", "vocabulary")
             source_label = {
                 "vocabulary":    "📖 重點單字",
@@ -1050,26 +1061,33 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
                 "hesitant":      "💭 猶豫單字",
                 "manual":        "✏️ 手動新增",
             }.get(source, "📖 重點單字")
-            st.caption(source_label)
             pos = word.get("part_of_speech", "")
-            pos_badge_html = f' <code style="font-size:0.65em;background:#F5F5F5;color:#888;padding:1px 6px;">{pos}</code>' if pos else ""
+            pos_badge_html = f'<code style="font-size:14px;background:#F5F5F5;color:#888;padding:2px 8px;margin-left:8px;vertical-align:middle;">{pos}</code>' if pos else ""
             card_word_js = word['word'].replace("'", "\\'").replace('"', '\\"')
             card_tts = (
                 f"var _s=window.speechSynthesis;if(_s){{var _u=new SpeechSynthesisUtterance('{card_word_js}');"
                 f"_u.lang='en-US';_u.rate=0.85;_u.volume=1;"
                 f"if(_s.speaking||_s.pending){{_s.cancel();setTimeout(function(){{_s.speak(_u);}},80);}}else{{_s.speak(_u);}}}}"
             )
+            # ── 単語カード（中央寄せ・枠付き）──
             st.markdown(
-                f'<h2 style="margin-bottom:0;font-weight:400;letter-spacing:.04em;">'
-                f'{word["word"]}{pos_badge_html}&nbsp;'
+                f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid #4A7C59;'
+                f'border-radius:2px;padding:48px 32px;text-align:center;margin:8px 0 4px;">'
+                f'<div style="font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:20px;">'
+                f'{source_label}</div>'
+                f'<div style="font-size:40px;font-weight:300;letter-spacing:.12em;color:#1A1A1A;">'
+                f'{word["word"]}{pos_badge_html}</div>'
+                f'<div style="margin-top:20px;">'
                 f'<span onclick="{card_tts}" '
-                f'style="cursor:pointer;font-size:0.65em;padding:4px 10px;border-radius:2px;'
-                f'background:#F5F5F5;border:1px solid #E0E0E0;color:#555;vertical-align:middle;'
-                f'font-weight:300;letter-spacing:.1em;-webkit-tap-highlight-color:transparent;" '
-                f'title="發音">🔊 發音</span></h2>',
+                f'style="cursor:pointer;font-size:13px;padding:6px 16px;border-radius:2px;'
+                f'background:#F5F5F5;border:1px solid #E0E0E0;color:#555;'
+                f'letter-spacing:.1em;-webkit-tap-highlight-color:transparent;" '
+                f'title="發音">🔊 發音 / Listen</span></div>'
+                f'<div style="font-size:11px;color:#CCC;letter-spacing:.1em;margin-top:18px;">'
+                f'復習 {word["review_count"]} 回　·　難易度 {word["ease_factor"]}</div>'
+                f'</div>',
                 unsafe_allow_html=True
             )
-            st.caption(f"復習回数 / 已複習 {word['review_count']} 回　｜　難易度 / 難易係數：{word['ease_factor']}")
 
             if not st.session_state.show_answer:
                 if st.button("👁️ 答えを見る / 顯示答案", use_container_width=True):
