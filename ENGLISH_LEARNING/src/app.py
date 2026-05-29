@@ -237,27 +237,46 @@ code { background: #F5F5F5 !important; color: #555 !important;
 
 /* ── 手機 (768px 以下) ── */
 @media (max-width: 768px) {
-    .main .block-container { padding: 1rem 1rem 3rem; }
-    h1 { font-size: 1.2rem !important; }
-    h2 { font-size: 1.05rem !important; }
-    h3 { font-size: .95rem !important; }
+    .main .block-container { padding: .75rem .75rem 3rem !important; }
+    h1 { font-size: 1.15rem !important; line-height: 1.5 !important; }
+    h2 { font-size: 1rem !important; }
+    h3 { font-size: .9rem !important; }
+    /* 側邊欄ヘッダー */
+    [data-testid="stSidebar"] h2 { font-size: .95rem !important; }
+    /* 欄位不溢出 */
     [data-testid="column"] { overflow: hidden; min-width: 0; }
     code, pre { white-space: pre-wrap !important; word-break: break-word !important; }
-    [data-testid="stTabs"] button[role="tab"] { padding: 8px 10px !important; font-size: 11px !important; }
+    /* タブ */
+    [data-testid="stTabs"] button[role="tab"] {
+        padding: 8px 8px !important; font-size: 11px !important;
+    }
+    /* metric */
+    [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+    /* caption */
+    .stCaption p { font-size: 11px !important; }
+    /* ボタン */
+    .stButton > button {
+        font-size: 12px !important; padding: 7px 10px !important;
+        white-space: normal !important; word-break: break-word !important;
+        line-height: 1.35 !important; min-height: 38px !important;
+    }
+    /* expander */
+    [data-testid="stExpander"] summary p { font-size: 12px !important; }
+    /* selectbox / input */
+    [data-testid="stSelectbox"] > div > div,
+    [data-testid="stTextInput"] input { font-size: 13px !important; }
+    /* 進捗バー高さ調整 */
+    [data-testid="stProgress"] > div { height: 3px !important; }
+    [data-testid="stProgress"] > div > div { height: 3px !important; }
 }
-@media (max-width: 375px) {
-    .main .block-container { padding: .75rem .75rem 3rem; }
-    h1 { font-size: 1.05rem !important; }
+@media (max-width: 390px) {
+    .main .block-container { padding: .5rem .5rem 3rem !important; }
+    h1 { font-size: 1rem !important; }
+    [data-testid="stTabs"] button[role="tab"] {
+        padding: 7px 6px !important; font-size: 10px !important;
+    }
 }
 </style>
-<script>
-function speakWord(w) {
-  const u = new SpeechSynthesisUtterance(w);
-  u.lang = 'en-US'; u.rate = 0.85;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
-}
-</script>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
@@ -621,6 +640,18 @@ elif page == "📰 ニュース検索 / 新聞搜尋":
 const GLOSSARY = {glossary_js};
 const isMobile = ('ontouchstart' in window);
 
+function ttsSpeak(word) {{
+  var s = window.speechSynthesis;
+  if (!s) return;
+  var go = function() {{
+    var u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate = 0.85; u.volume = 1;
+    s.speak(u);
+  }};
+  if (s.speaking || s.pending) {{ s.cancel(); setTimeout(go, 80); }}
+  else {{ go(); }}
+}}
+
 function showTooltip(el, x, y) {{
   const word = el.dataset.word;
   const entry = GLOSSARY[word];
@@ -638,7 +669,6 @@ function showTooltip(el, x, y) {{
   const tipH = tip.offsetHeight || 80;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  // 靠右側時往左展開，避免遮擋
   let tx = (x + 14 + tipW > vw - 8) ? (x - tipW - 8) : (x + 14);
   let ty = (y + tipH > vh - 8) ? (vh - tipH - 8) : (y - 10);
   tip.style.left = Math.max(4, tx) + 'px';
@@ -647,11 +677,7 @@ function showTooltip(el, x, y) {{
 
 function onHover(el) {{
   if (isMobile) return;
-  const word = el.dataset.word;
-  const utt = new SpeechSynthesisUtterance(word);
-  utt.lang = 'en-US'; utt.rate = 0.85;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utt);
+  ttsSpeak(el.dataset.word);
 }}
 
 document.addEventListener('mousemove', function(e) {{
@@ -687,11 +713,8 @@ document.querySelectorAll('.w').forEach(function(el) {{
     el.classList.add('active');
     const touch = e.touches[0];
 
-    // 點擊播放發音
-    const utt = new SpeechSynthesisUtterance(el.dataset.word);
-    utt.lang = 'en-US'; utt.rate = 0.85;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utt);
+    // 點擊播放發音（iOS 相容）
+    ttsSpeak(el.dataset.word);
 
     // 顯示 tooltip
     showTooltip(el, touch.clientX, touch.clientY);
@@ -1029,15 +1052,21 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
             }.get(source, "📖 重點單字")
             st.caption(source_label)
             pos = word.get("part_of_speech", "")
-            pos_badge_html = f' <code style="font-size:0.65em">{pos}</code>' if pos else ""
+            pos_badge_html = f' <code style="font-size:0.65em;background:#F5F5F5;color:#888;padding:1px 6px;">{pos}</code>' if pos else ""
             card_word_js = word['word'].replace("'", "\\'").replace('"', '\\"')
+            card_tts = (
+                f"var _s=window.speechSynthesis;if(_s){{var _u=new SpeechSynthesisUtterance('{card_word_js}');"
+                f"_u.lang='en-US';_u.rate=0.85;_u.volume=1;"
+                f"if(_s.speaking||_s.pending){{_s.cancel();setTimeout(function(){{_s.speak(_u);}},80);}}else{{_s.speak(_u);}}}}"
+            )
             st.markdown(
-                f'<h2 style="margin-bottom:0">{word["word"]}{pos_badge_html}&nbsp;'
-                f'<span onclick="speakWord(\'{card_word_js}\')" '
-                f'style="cursor:pointer;font-size:0.7em;padding:3px 8px;border-radius:6px;'
-                f'background:#1e3a5c;border:1px solid #3a6ea8;vertical-align:middle;'
-                f'-webkit-tap-highlight-color:transparent;" '
-                f'title="發音 / Pronunciation">🔊 發音</span></h2>',
+                f'<h2 style="margin-bottom:0;font-weight:400;letter-spacing:.04em;">'
+                f'{word["word"]}{pos_badge_html}&nbsp;'
+                f'<span onclick="{card_tts}" '
+                f'style="cursor:pointer;font-size:0.65em;padding:4px 10px;border-radius:2px;'
+                f'background:#F5F5F5;border:1px solid #E0E0E0;color:#555;vertical-align:middle;'
+                f'font-weight:300;letter-spacing:.1em;-webkit-tap-highlight-color:transparent;" '
+                f'title="發音">🔊 發音</span></h2>',
                 unsafe_allow_html=True
             )
             st.caption(f"復習回数 / 已複習 {word['review_count']} 回　｜　難易度 / 難易係數：{word['ease_factor']}")
@@ -1088,16 +1117,20 @@ elif page == "🗓️ 今日の単語 / 今日單字":  # noqa: E501
         for v in filtered:
             col_w, col_d, col_s, col_del = st.columns([2, 4, 2, 1])
             with col_w:
-                pos_html = f' <code style="font-size:0.75em">{v["part_of_speech"]}</code>' if v.get("part_of_speech") else ""
+                pos_html = f' <code style="font-size:0.7em;background:#F5F5F5;color:#888;padding:1px 5px;">{v["part_of_speech"]}</code>' if v.get("part_of_speech") else ""
                 word_js = v['word'].replace("'", "\\'").replace('"', '\\"')
+                word_tts = (
+                    f"var _s=window.speechSynthesis;if(_s){{var _u=new SpeechSynthesisUtterance('{word_js}');"
+                    f"_u.lang='en-US';_u.rate=0.85;_u.volume=1;"
+                    f"if(_s.speaking||_s.pending){{_s.cancel();setTimeout(function(){{_s.speak(_u);}},80);}}else{{_s.speak(_u);}}}}"
+                )
                 st.markdown(
-                    f'<b>{v["word"]}</b>{pos_html}&nbsp;'
-                    f'<span onclick="speakWord(\'{word_js}\')" '
-                    f'style="cursor:pointer;font-size:1.1em;padding:2px 5px;border-radius:4px;'
-                    f'transition:background 0.15s;-webkit-tap-highlight-color:transparent;" '
-                    f'onmouseover="this.style.background=\'#2a4a6a\'" '
-                    f'onmouseout="this.style.background=\'transparent\'" '
-                    f'title="發音 / Pronunciation">🔊</span>',
+                    f'<span style="font-weight:500;color:#1A1A1A;">{v["word"]}</span>{pos_html}&nbsp;'
+                    f'<span onclick="{word_tts}" '
+                    f'style="cursor:pointer;font-size:0.9em;padding:2px 6px;border-radius:2px;'
+                    f'background:#F5F5F5;border:1px solid #E8E8E8;color:#888;'
+                    f'-webkit-tap-highlight-color:transparent;" '
+                    f'title="發音">🔊</span>',
                     unsafe_allow_html=True
                 )
             with col_d:
