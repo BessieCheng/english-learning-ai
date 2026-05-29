@@ -32,80 +32,222 @@ st.set_page_config(
 st.title("🎙️ 英文対話分析・スマート単語帳 / 英文對話分析與智慧單字本")
 st.caption("英語会話の録音をアップロードして、AIが文法分析・単語整理します / 上傳英文對話錄音，AI 幫你分析文法、整理單字")
 
-# ── 手機響應式 CSS ─────────────────────────────────────────────
+# ── 禅・無印 テーマ + 手機響應式 CSS ────────────────────────────
 st.markdown("""
 <style>
-/* 防止水平溢出 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap');
+
+/* ── 全体背景・フォント ── */
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #FAFAFA !important;
+    color: #1A1A1A !important;
+}
+[data-testid="stAppViewContainer"] {
+    font-family: 'Noto Sans JP', 'Helvetica Neue', sans-serif !important;
+    font-weight: 300;
+}
+
+/* ── メインエリア ── */
 .main .block-container {
     max-width: 100%;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 2rem 2rem 4rem;
     overflow-x: hidden;
     box-sizing: border-box;
+    background: #FAFAFA;
 }
 
-/* 手機螢幕 (768px 以下) */
+/* ── タイトル・見出し ── */
+h1 { font-size: 1.5rem !important; font-weight: 400 !important;
+     letter-spacing: .04em !important; color: #1A1A1A !important; }
+h2 { font-size: 1.2rem !important; font-weight: 400 !important;
+     letter-spacing: .03em !important; color: #1A1A1A !important;
+     border-bottom: 1px solid #E8E8E8 !important; padding-bottom: .4rem !important; }
+h3 { font-size: 1.05rem !important; font-weight: 500 !important; color: #1A1A1A !important; }
+.stCaption p { color: #AAAAAA !important; font-size: 11px !important; letter-spacing: .08em; }
+
+/* ── サイドバー ── */
+[data-testid="stSidebar"] {
+    background-color: #F5F5F5 !important;
+    border-right: 1px solid #EBEBEB !important;
+}
+[data-testid="stSidebar"] * { font-family: 'Noto Sans JP', sans-serif !important; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] p {
+    color: #555 !important; font-weight: 400 !important;
+}
+[data-testid="stSidebar"] .stRadio label {
+    font-size: 13px !important; color: #555 !important;
+    padding: 8px 0 !important; letter-spacing: .04em;
+    border-bottom: 1px solid #EBEBEB !important;
+}
+[data-testid="stSidebar"] .stRadio [aria-checked="true"] + div {
+    color: #4A7C59 !important; font-weight: 500 !important;
+}
+
+/* ── ボタン ── */
+.stButton > button {
+    background-color: #FFF !important;
+    color: #1A1A1A !important;
+    border: 1px solid #DDD !important;
+    border-radius: 2px !important;
+    font-family: 'Noto Sans JP', sans-serif !important;
+    font-weight: 400 !important;
+    letter-spacing: .08em !important;
+    font-size: 13px !important;
+    padding: 8px 20px !important;
+    transition: border-color .2s, color .2s !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.4 !important;
+    min-height: 40px !important;
+}
+.stButton > button:hover {
+    border-color: #4A7C59 !important;
+    color: #4A7C59 !important;
+    background-color: #FFF !important;
+}
+/* primary ボタン */
+.stButton > button[kind="primary"],
+[data-testid="baseButton-primary"] {
+    background-color: #4A7C59 !important;
+    color: #FFF !important;
+    border: none !important;
+}
+[data-testid="baseButton-primary"]:hover {
+    background-color: #3D6A4B !important;
+    color: #FFF !important;
+}
+
+/* ── 入力・セレクト ── */
+input, textarea, select,
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea {
+    background: #FFF !important;
+    border: 1px solid #E0E0E0 !important;
+    border-radius: 2px !important;
+    color: #1A1A1A !important;
+    font-family: 'Noto Sans JP', sans-serif !important;
+    font-size: 13px !important;
+}
+input:focus, textarea:focus {
+    border-color: #4A7C59 !important;
+    box-shadow: none !important;
+}
+
+/* ── メトリクス ── */
+[data-testid="metric-container"] {
+    background: #FFF !important;
+    border: 1px solid #E8E8E8 !important;
+    border-top: 2px solid #4A7C59 !important;
+    border-radius: 2px !important;
+    padding: 16px !important;
+}
+[data-testid="stMetricValue"] {
+    font-size: 2rem !important; font-weight: 300 !important;
+    color: #1A1A1A !important;
+}
+[data-testid="stMetricLabel"] {
+    font-size: 11px !important; color: #AAA !important;
+    letter-spacing: .12em !important;
+}
+
+/* ── エクスパンダー ── */
+[data-testid="stExpander"] {
+    border: 1px solid #E8E8E8 !important;
+    border-radius: 2px !important;
+    background: #FFF !important;
+}
+[data-testid="stExpander"] summary {
+    background: #FFF !important;
+    font-size: 13px !important;
+    color: #555 !important;
+    letter-spacing: .04em;
+}
+[data-testid="stExpander"] summary:hover { color: #4A7C59 !important; }
+
+/* ── タブ ── */
+[data-testid="stTabs"] [role="tablist"] {
+    border-bottom: 1px solid #E8E8E8 !important;
+    gap: 0 !important;
+}
+[data-testid="stTabs"] button[role="tab"] {
+    font-size: 12px !important; color: #AAA !important;
+    letter-spacing: .1em !important; font-weight: 400 !important;
+    padding: 8px 20px !important; border-bottom: 2px solid transparent !important;
+    background: transparent !important; border-radius: 0 !important;
+}
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+    color: #4A7C59 !important; border-bottom-color: #4A7C59 !important;
+    font-weight: 500 !important;
+}
+
+/* ── info / success / warning / error ── */
+[data-testid="stAlert"] {
+    border-radius: 2px !important;
+    border-left-width: 3px !important;
+    font-size: 13px !important;
+}
+.stSuccess { background: #F0F7F2 !important; border-color: #4A7C59 !important; color: #2D5E3A !important; }
+.stInfo    { background: #F5F8FF !important; border-color: #6B8FC4 !important; color: #2A4A7A !important; }
+.stWarning { background: #FDF8F0 !important; border-color: #C4A45A !important; color: #7A5A1A !important; }
+
+/* ── 進捗バー ── */
+[data-testid="stProgress"] > div > div {
+    background: #4A7C59 !important;
+    border-radius: 0 !important;
+    height: 2px !important;
+}
+[data-testid="stProgress"] > div {
+    background: #E8E8E8 !important;
+    border-radius: 0 !important;
+    height: 2px !important;
+}
+
+/* ── divider ── */
+hr { border-color: #E8E8E8 !important; border-width: 1px 0 0 !important; }
+
+/* ── code ── */
+code { background: #F5F5F5 !important; color: #555 !important;
+       font-size: .85em !important; padding: 1px 6px !important;
+       border-radius: 2px !important; }
+
+/* ── ファイルアップローダー ── */
+[data-testid="stFileUploader"] {
+    border: 1px solid #E0E0E0 !important;
+    border-radius: 2px !important;
+    background: #FFF !important;
+}
+
+/* ── selectbox ── */
+[data-testid="stSelectbox"] > div > div {
+    background: #FFF !important;
+    border: 1px solid #E0E0E0 !important;
+    border-radius: 2px !important;
+    color: #1A1A1A !important;
+    font-size: 13px !important;
+}
+
+/* ── トースト通知 ── */
+[data-testid="stToast"] {
+    background: #1A1A1A !important;
+    color: #FFF !important;
+    border-radius: 2px !important;
+    font-size: 13px !important;
+}
+
+/* ── 手機 (768px 以下) ── */
 @media (max-width: 768px) {
-    h1 { font-size: 1.3rem !important; line-height: 1.4 !important; }
-    h2 { font-size: 1.15rem !important; }
-    h3 { font-size: 1.05rem !important; }
-
-    /* 所有按鈕手機友善大小 */
-    .stButton > button {
-        font-size: 13px !important;
-        padding: 8px 10px !important;
-        white-space: normal !important;
-        word-break: break-word !important;
-        line-height: 1.3 !important;
-        min-height: 40px !important;
-    }
-
-    /* expander 標題縮小 */
-    [data-testid="stExpander"] summary p,
-    .streamlit-expanderHeader p {
-        font-size: 13px !important;
-    }
-
-    /* metric 卡片 */
-    [data-testid="stMetricValue"] { font-size: 1.5rem !important; }
-    [data-testid="stMetricLabel"] { font-size: 12px !important; }
-
-    /* caption 縮小 */
-    .stCaption p { font-size: 11px !important; }
-
-    /* 防止欄位內容溢出 */
-    [data-testid="column"] {
-        overflow: hidden;
-        min-width: 0;
-    }
-
-    /* 防止 code block 溢出 */
+    .main .block-container { padding: 1rem 1rem 3rem; }
+    h1 { font-size: 1.2rem !important; }
+    h2 { font-size: 1.05rem !important; }
+    h3 { font-size: .95rem !important; }
+    [data-testid="column"] { overflow: hidden; min-width: 0; }
     code, pre { white-space: pre-wrap !important; word-break: break-word !important; }
-
-    /* selectbox / text_input 撐滿寬度 */
-    [data-testid="stSelectbox"],
-    [data-testid="stTextInput"] { width: 100% !important; }
-
-    /* 側邊欄字體 */
-    [data-testid="stSidebar"] { font-size: 14px; }
-
-    /* radio 選項間距 */
-    [data-testid="stSidebar"] .stRadio label { padding: 6px 0; }
-
-    /* 進度條文字 */
-    [data-testid="stProgress"] p { font-size: 12px !important; }
-
-    /* tab 字體 */
-    [data-testid="stTabs"] button p { font-size: 12px !important; }
+    [data-testid="stTabs"] button[role="tab"] { padding: 8px 10px !important; font-size: 11px !important; }
 }
-
-/* 極小螢幕 (375px 以下) */
 @media (max-width: 375px) {
-    .main .block-container {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-    h1 { font-size: 1.1rem !important; }
+    .main .block-container { padding: .75rem .75rem 3rem; }
+    h1 { font-size: 1.05rem !important; }
 }
 </style>
 <script>
