@@ -29,8 +29,18 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🎙️ 英文対話分析・スマート単語帳 / 英文對話分析與智慧單字本")
-st.caption("英語会話の録音をアップロードして、AIが文法分析・単語整理します / 上傳英文對話錄音，AI 幫你分析文法、整理單字")
+st.markdown(
+    '<div style="padding:4px 0 20px;border-bottom:1px solid #E8E8E8;margin-bottom:28px;">'
+    '<div style="font-size:24px;font-weight:400;letter-spacing:.04em;color:#1A1A1A;line-height:1.4;">'
+    '🎙️ 英文対話分析・スマート単語帳</div>'
+    '<div style="font-size:14px;font-weight:400;color:#888;letter-spacing:.03em;margin-top:2px;">'
+    '英文對話分析與智慧單字本</div>'
+    '<div style="font-size:11px;color:#BBB;letter-spacing:.08em;margin-top:10px;line-height:1.6;">'
+    '英語会話の録音をアップロードして、AIが文法分析・単語整理します<br>'
+    '上傳英文對話錄音，AI 幫你分析文法、整理單字</div>'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 # ── 禅・無印 テーマ + 手機響應式 CSS ────────────────────────────
 st.markdown("""
@@ -282,6 +292,68 @@ code { background: #F5F5F5 !important; color: #555 !important;
         padding: 7px 6px !important; font-size: 10px !important;
     }
 }
+
+/* ════ 精緻化（脫離預設樣式）════ */
+/* subheader を section 見出し風に */
+h3 {
+    position: relative !important;
+    padding-left: 14px !important;
+    letter-spacing: .06em !important;
+    margin-top: 8px !important;
+}
+h3::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important; top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 4px !important; height: 16px !important;
+    background: #4A7C59 !important;
+    border-radius: 1px !important;
+}
+/* sidebar radio をメニューカード風に */
+[data-testid="stSidebar"] .stRadio > div {
+    gap: 0 !important;
+}
+[data-testid="stSidebar"] .stRadio label {
+    padding: 11px 4px !important;
+    margin: 0 !important;
+    transition: color .15s, padding-left .15s !important;
+}
+[data-testid="stSidebar"] .stRadio label:hover {
+    color: #4A7C59 !important;
+    padding-left: 8px !important;
+}
+/* expander をカード風に強化 */
+[data-testid="stExpander"] {
+    box-shadow: 0 1px 2px rgba(0,0,0,.03) !important;
+    margin-bottom: 10px !important;
+    transition: box-shadow .15s !important;
+}
+[data-testid="stExpander"]:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
+}
+/* metric ラベルを大文字スタイルに */
+[data-testid="stMetricLabel"] {
+    text-transform: uppercase !important;
+    font-weight: 500 !important;
+}
+/* divider を細く上品に */
+[data-testid="stMarkdownContainer"] hr {
+    margin: 1.5rem 0 !important;
+    border-color: #ECECEC !important;
+}
+/* 全体行間 */
+[data-testid="stAppViewContainer"] p { line-height: 1.7 !important; }
+/* file uploader 内テキスト */
+[data-testid="stFileUploader"] section {
+    background: #FFF !important;
+    border: 1px dashed #DDD !important;
+    border-radius: 2px !important;
+}
+/* スクロールバー（webkit）*/
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #DDD; border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -289,7 +361,14 @@ code { background: #F5F5F5 !important; color: #555 !important;
 # 側邊欄：導覽選單
 # ══════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.header("📋 メニュー / 功能選單")
+    st.markdown(
+        '<div style="padding:4px 0 8px;">'
+        '<div style="font-size:15px;font-weight:500;color:#1A1A1A;letter-spacing:.05em;">🎙 英文分析</div>'
+        '<div style="font-size:10px;color:#BBB;letter-spacing:.22em;margin-top:2px;">ENGLISH LEARNING AI</div>'
+        '</div>'
+        '<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:18px 0 8px;">MENU</div>',
+        unsafe_allow_html=True
+    )
     page = st.radio(
         "選擇功能",
         ["📚 履歴 / 歷史記錄",
@@ -300,9 +379,12 @@ with st.sidebar:
         key="page_radio"
     )
 
-    st.markdown("---")
-    st.caption("🌐 外部分享 / Share")
-    st.info("直接將此頁面網址分享給朋友即可 / Share this page URL directly with friends")
+    st.markdown(
+        '<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:24px 0 8px;">SHARE</div>'
+        '<div style="font-size:11px;color:#999;line-height:1.7;letter-spacing:.03em;">'
+        '直接將此頁面網址分享給朋友<br>Share this page URL with friends</div>',
+        unsafe_allow_html=True
+    )
 
 # ══════════════════════════════════════════════════════════════
 # 頁面一：上傳分析
