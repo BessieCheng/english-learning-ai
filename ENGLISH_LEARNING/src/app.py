@@ -1452,11 +1452,13 @@ function saveToVocab(word) {{
   document.getElementById('ctx-saved').style.display = 'block';
 
   setTimeout(() => {{
-    const url = new URL(window.parent.location.href);
+    // cross-origin で window.parent.location を読めないため referrer を使う
+    const base = document.referrer || window.location.href;
+    const url = new URL(base);
     url.searchParams.set('save_word', word);
     url.searchParams.set('save_def', def);
     url.searchParams.set('save_pos', pos);
-    window.parent.location.href = url.toString();
+    window.top.location.href = url.toString();
   }}, 600);
 }}
 </script>
@@ -1895,9 +1897,14 @@ function spk(w){{
   window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
 }}
 function del(id){{
-  var url=new URL(window.parent.location.href);
-  url.searchParams.set('del_vocab',id);
-  window.parent.location.href=url.toString();
+  // window.parent.location は cross-origin で読めずエラーになるため
+  // document.referrer（＝親アプリのURL、読み取り可）からURLを組み立てる
+  try {{
+    var base = document.referrer || window.location.href;
+    var url = new URL(base);
+    url.searchParams.set('del_vocab', id);
+    window.top.location.href = url.toString();
+  }} catch(e) {{ alert('刪除失敗 / 削除失敗: ' + e); }}
 }}
 </script>
 """
