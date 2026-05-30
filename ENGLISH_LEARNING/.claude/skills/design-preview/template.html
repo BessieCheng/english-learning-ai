@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<!-- design-preview テンプレート ─ コピーして配色/部品を差し替え、render.sh で撮影する。
+     ENGLISH_LEARNING の現在のテーマトークン:
+
+     == 禅・無印 (zen) ==
+       bg #FAFAFA / card #FFF / text #1A1A1A / muted #888 / accent(緑) #4A7C59
+       角丸 2px、フォント Noto Sans JP、見出しに緑の縦バー
+     == 動物風 (animal) ==
+       bg #FFFBF2 / card #FFF / text #6B5644 / muted #B6A088
+       accent(蜂蜜) #F4C152 / 濃 #E8AE3A / ミント #9FD8A6 / ピンク帯 #FBD7E4
+       角丸 大きめ、フォント Zen Maru Gothic / 見出し Mochiy Pop One
+       タイトル = 茶字＋ピンクのマーカー下線（浮誇な縁取りは不可）
+
+     共通の小部品:
+       🎧/－ ボタン = 46x44 の淡灰枠（bg #F5F5F5, border #E0E0E0, 角丸 2px、－は赤 #C0504D）
+       品詞バッジ = bg #EEE / 文字 #999 / 角丸 3px
+-->
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  /* ▼ テーマ変数（zen か animal の値に差し替えて使う）▼ */
+  :root{
+    --bg:#FFFBF2; --card:#FFF; --text:#6B5644; --muted:#B6A088;
+    --accent:#F4C152; --accent2:#9FD8A6; --pink:#FBD7E4;
+    --font:'Zen Maru Gothic',sans-serif; --head:'Mochiy Pop One',sans-serif;
+  }
+  body{background:var(--bg);font-family:var(--font);color:var(--text);padding:30px 44px;}
+  .title{font-family:var(--head);font-size:27px;color:var(--text);line-height:1.9;
+         background:linear-gradient(transparent 60%, var(--pink) 60%);padding:0 6px;}
+  .sub{font-size:14px;color:#A9B98A;font-weight:700;margin:16px 0 24px;}
+  h2{font-family:var(--head);font-size:19px;color:var(--text);font-weight:400;margin:22px 0 14px;}
+  h3{font-size:18px;font-weight:700;position:relative;padding-left:18px;margin:26px 0 12px;}
+  h3::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+             width:11px;height:11px;background:var(--accent2);border:2px solid var(--text);border-radius:50%;}
+  .spkC{background:#FFF;color:#B0863A;border:2px solid var(--accent);border-radius:22px;
+        padding:8px 22px;font-weight:700;font-size:14px;cursor:pointer;}
+  .card{background:var(--card);border:1px solid #E8E8E8;border-radius:10px;padding:32px 24px 28px;
+        text-align:center;margin:6px 0 14px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+  .card .src{font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:14px;}
+  .card .w{font-size:38px;font-weight:300;color:#1A1A1A;}
+  .badge{display:inline-block;background:#FCEFCF;color:#B0863A;font-size:13px;padding:3px 12px;border-radius:8px;margin-top:12px;}
+  .vrow{display:flex;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid #F0E4CE;}
+  .vrow .info{flex:1;}
+  .vrow .vw{font-weight:700;font-size:14px;color:var(--text);}
+  .vrow .vpos{font-size:11px;background:#EEE;color:#999;padding:1px 7px;border-radius:3px;margin-left:4px;}
+  .vrow .vd{font-size:12px;color:#888;margin-top:2px;}
+  .ibox{width:46px;height:44px;display:flex;align-items:center;justify-content:center;
+        background:#F5F5F5;border:1px solid #E0E0E0;border-radius:2px;}
+  .ibox.del{color:#C0504D;font-size:22px;}
+  .ibox.spk{font-size:18px;}
+</style></head>
+<body>
+  <span class="title">英文対話分析・スマート単語帳</span>
+  <div class="sub">AIで英会話を分析・単語を記憶</div>
+
+  <h2>今日の単語復習</h2>
+  <div style="display:flex;justify-content:flex-end;"><button class="spkC">🔊 発音</button></div>
+  <div class="card">
+    <div class="src">手 動 追 加</div><div class="w">fluffy</div>
+    <div class="badge">adjective</div>
+  </div>
+
+  <h3>単語リスト</h3>
+  <div class="vrow"><div class="info"><span class="vw">whiskey</span><span class="vpos">noun</span><div class="vd">穀物を発酵・蒸留して作られる飲料。</div></div><span class="ibox spk">🎧</span><span class="ibox del">－</span></div>
+  <div class="vrow"><div class="info"><span class="vw">fluffy</span><span class="vpos">adjective</span><div class="vd">ふわふわした。</div></div><span class="ibox spk">🎧</span><span class="ibox del">－</span></div>
+</body></html>
