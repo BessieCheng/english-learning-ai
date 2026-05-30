@@ -1161,37 +1161,24 @@ elif page == "news":
     with sc2:
         _go = st.button("🔍", use_container_width=True, type="primary", key="news_go")
 
-    # 初始化聊天記錄
-    if "news_messages" not in st.session_state:
-        st.session_state.news_messages = []
-
-    # 顯示歷史聊天記錄
-    for msg in st.session_state.news_messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"], unsafe_allow_html=True)
-
-    # 検索実行（任何語言皆可）
+    # ── 検索 or 直近の記事を再表示 ───────────────────────────────
+    #   chat_message（灰色の吹き出し）は使わない。最新記事だけを session
+    #   に保存して表示する → rerun（単語保存など）後も記事が消えない。
+    articles = st.session_state.get("news_last")
     if _go and _topic.strip():
-        prompt = _topic.strip()
+        with st.spinner("Searching real news with Gemini..."):
+            try:
+                articles = fetch_news_with_gemini(_topic.strip(), level_key, count=1)
+            except Exception as e:
+                st.error(f"{t('news_search_fail')}{e}")
+                st.stop()
+        st.session_state["news_last"] = articles
 
-        # 顯示使用者訊息
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        st.session_state.news_messages.append({"role": "user", "content": prompt})
-
-        # 用 Gemini + Google Search 找真實新聞（只取 1 篇）
-        with st.chat_message("assistant"):
-            with st.spinner("Searching real news with Gemini..."):
-                try:
-                    articles = fetch_news_with_gemini(prompt, level_key, count=1)
-                except Exception as e:
-                    st.error(f"{t('news_search_fail')}{e}")
-                    st.stop()
+    if articles is not None:
+        with st.container():
 
             if not articles:
-                reply = "No articles found. Please try a different topic."
-                st.markdown(reply)
-                st.session_state.news_messages.append({"role": "assistant", "content": reply})
+                st.info("No articles found. Please try a different topic.")
             else:
                 a = articles[0]
                 title  = a.get("title", "")
@@ -1492,23 +1479,15 @@ function saveToVocab(word) {{
                 # ── 儲存 & 練習按鈕 ───────────────────────────────
                 btn_col1, btn_col2 = st.columns(2)
                 with btn_col1:
-                    if st.button(t("news_save_btn"), key=f"save_news_{len(st.session_state.news_messages)}", use_container_width=True):
+                    if st.button(t("news_save_btn"), key="save_news_btn", use_container_width=True):
                         import json as _j
                         save_news_article(title, source, date, body, _j.dumps(vocab, ensure_ascii=False))
                         st.toast(t("news_saved_toast"), icon="💾")
                 with btn_col2:
-                    if st.button(t("news_practice_btn"), key=f"practice_news_{len(st.session_state.news_messages)}", use_container_width=True, type="primary"):
+                    if st.button(t("news_practice_btn"), key="practice_news_btn", use_container_width=True, type="primary"):
                         st.session_state["practice_news"] = {"title": title, "body": body}
                         st.session_state["page_idx"] = 3  # upload ページへ
                         st.rerun()
-
-                # 存入歷史記錄（純文字版本）
-                saved = f"{header_md}\n\n{body}\n\n" + (
-                    "**Key Vocabulary:**\n" +
-                    "\n".join(f"- **{v.get('word')}** — {v.get('definition')}" for v in vocab)
-                    if vocab else ""
-                )
-                st.session_state.news_messages.append({"role": "assistant", "content": saved})
 
     # ── 已儲存新聞清單 ─────────────────────────────────────────
     st.markdown("---")
