@@ -290,11 +290,11 @@ THEME = st.session_state["theme"]
 if THEME == "animal":
     st.markdown(
         '<div style="padding:6px 0 18px;margin-bottom:24px;">'
-        '<div style="font-family:\'Mochiy Pop One\',sans-serif;font-size:28px;font-weight:400;'
-        'letter-spacing:.02em;color:#F49CB8;line-height:1.55;'
-        'text-shadow:2px 2px 0 #FFF,-2px 2px 0 #FFF,2px -2px 0 #FFF,-2px -2px 0 #FFF,0 4px 0 #E98AA8;">'
-        f'🐹 {t("title_main")}</div>'
-        '<div style="font-size:14px;font-weight:700;color:#A9B98A;letter-spacing:.01em;margin-top:8px;">'
+        '<span style="font-family:\'Mochiy Pop One\',sans-serif;font-size:27px;font-weight:400;'
+        'letter-spacing:.02em;color:#6B5644;line-height:1.9;'
+        'background:linear-gradient(transparent 60%, #FBD7E4 60%);padding:0 6px;">'
+        f'{t("title_main")}</span>'
+        '<div style="font-size:14px;font-weight:700;color:#A9B98A;letter-spacing:.01em;margin-top:16px;">'
         f'{t("title_sub")}</div>'
         '</div>',
         unsafe_allow_html=True
@@ -960,10 +960,8 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 /* 見出し（丸くてぷにっと）*/
-h1 { font-family:'Mochiy Pop One',sans-serif !important; font-size:1.55rem !important; font-weight:400 !important; color:#F49CB8 !important; letter-spacing:.01em !important;
-     text-shadow:1.5px 1.5px 0 #FFF,-1.5px 1.5px 0 #FFF,1.5px -1.5px 0 #FFF,-1.5px -1.5px 0 #FFF,0 3px 0 #E98AA8 !important; }
-h2 { font-family:'Mochiy Pop One',sans-serif !important; font-size:1.2rem !important; font-weight:400 !important; color:#F49CB8 !important; border-bottom:none !important; padding-bottom:.2rem !important;
-     text-shadow:1.5px 1.5px 0 #FFF,-1.5px 1.5px 0 #FFF,1.5px -1.5px 0 #FFF,-1.5px -1.5px 0 #FFF,0 3px 0 #E98AA8 !important; }
+h1 { font-family:'Mochiy Pop One',sans-serif !important; font-size:1.5rem !important; font-weight:400 !important; color:#6B5644 !important; letter-spacing:.01em !important; }
+h2 { font-family:'Mochiy Pop One',sans-serif !important; font-size:1.18rem !important; font-weight:400 !important; color:#6B5644 !important; border-bottom:none !important; padding-bottom:.2rem !important; }
 h3 { font-size:1.08rem !important; font-weight:700 !important; color:#6B5644 !important; }
 .stCaption p { color:#B6A088 !important; font-size:12px !important; }
 [data-testid="stAppViewContainer"] p { line-height:1.75 !important; }
@@ -2018,10 +2016,28 @@ elif page == "today":  # noqa: E501
                 f'color:#888;padding:2px 10px;white-space:nowrap;">{pos}</code></div>'
                 if pos else ""
             )
-            # ── 単語カード（中央寄せ・枠付き）。発音ボタンは下に speak_button で別途描画 ──
+            # 発音ボタン（スタイルC・奶油描邊）— 単語カードの左上に配置。
+            #   枠線/文字色はテーマのアクセントに合わせる。
+            _acc = {"zen": ("#4A7C59", "#4A7C59"),
+                    "pastel": ("#E27BA0", "#E27BA0"),
+                    "animal": ("#F4C152", "#B0863A")}.get(THEME, ("#4A7C59", "#4A7C59"))
+            _wjs2 = word["word"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
+            components.html(f"""
+<div style="display:flex;justify-content:flex-end;">
+<button onclick="(function(){{ if(!window.speechSynthesis) return;
+  var u=new SpeechSynthesisUtterance('{_wjs2}'); u.lang='en-US'; u.rate=0.85; u.volume=1;
+  window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }})()"
+  style="background:#FFF;color:{_acc[1]};border:2px solid {_acc[0]};border-radius:22px;
+  padding:8px 22px;font-weight:700;font-size:14px;cursor:pointer;
+  font-family:'Zen Maru Gothic','Noto Sans JP',sans-serif;-webkit-tap-highlight-color:transparent;"
+  onmouseover="this.style.background='#FAFAFA'"
+  onmouseout="this.style.background='#FFF'">{t("today_listen")}</button>
+</div>
+""", height=50)
+            # ── 単語カード（中央寄せ・枠付き）──
             st.markdown(
                 f'<div style="background:#FFF;border:1px solid #E8E8E8;'
-                f'border-radius:10px;padding:44px 24px 32px;text-align:center;margin:8px 0 14px;'
+                f'border-radius:10px;padding:40px 24px 32px;text-align:center;margin:2px 0 14px;'
                 f'box-shadow:0 1px 4px rgba(0,0,0,.04);">'
                 f'<div style="font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:18px;">'
                 f'{source_label}</div>'
@@ -2033,10 +2049,6 @@ elif page == "today":  # noqa: E501
                 f'</div>',
                 unsafe_allow_html=True
             )
-            # 発音ボタン（実際に音が出る）— カードの下に独立配置
-            bcol = st.columns([1, 1, 1])[1]
-            with bcol:
-                speak_button(word["word"], label=t("today_listen"), height=46)
 
             if not st.session_state.show_answer:
                 if st.button(t("today_show"), use_container_width=True, type="primary"):
@@ -2108,11 +2120,13 @@ elif page == "today":  # noqa: E501
         st.markdown("""
 <style>
 div[class*="st-key-del_vocab_"] button {
+    width:46px !important; min-width:46px !important; max-width:46px !important;
+    height:44px !important; min-height:44px !important; max-height:44px !important;
+    margin:0 auto !important; padding:0 !important;
     background:#F5F5F5 !important; color:#C0504D !important;
     border:1px solid #E0E0E0 !important; border-radius:2px !important;
-    box-shadow:none !important; min-height:44px !important;
-    font-size:22px !important; font-weight:400 !important;
-    line-height:1 !important; padding:0 !important;
+    box-shadow:none !important; font-size:22px !important;
+    font-weight:400 !important; line-height:1 !important;
 }
 div[class*="st-key-del_vocab_"] button:hover {
     background:#F2E4E4 !important; border-color:#D9B8B8 !important; color:#A83A36 !important;
@@ -2146,21 +2160,23 @@ div[class*="st-key-del_vocab_"] button:hover {
                     unsafe_allow_html=True,
                 )
             with c_spk:
-                # 🎧 を － と同じ「幅いっぱい・同じ高さ」の枠にして大きさを揃える
+                # 🎧 と － を同じ 46×44 の枠に固定して大きさを完全に揃える
                 _wjs = m["word"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
                 components.html(f"""
+<div style="display:flex;justify-content:center;align-items:center;height:46px;margin:0;">
 <button onclick="(function(){{ if(!window.speechSynthesis) return;
   var u=new SpeechSynthesisUtterance('{_wjs}'); u.lang='en-US'; u.rate=0.85; u.volume=1;
   window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }})()"
-  style="width:100%;height:44px;background:#F5F5F5;color:#555;border:1px solid #E0E0E0;
-  border-radius:2px;font-size:18px;line-height:1;cursor:pointer;
+  style="width:46px;height:44px;background:#F5F5F5;color:#555;border:1px solid #E0E0E0;
+  border-radius:2px;font-size:18px;line-height:1;cursor:pointer;padding:0;
   -webkit-tap-highlight-color:transparent;"
   onmouseover="this.style.background='#ECECEC'"
   onmouseout="this.style.background='#F5F5F5'">🎧</button>
-""", height=46)
+</div>
+""", height=48)
             with c_del:
                 if st.button("－", key=f"del_vocab_{m['ids'][0]}",
-                             help=t("today_del_help"), use_container_width=True):
+                             help=t("today_del_help")):
                     for _id in m["ids"]:
                         delete_vocabulary(int(_id))
                     st.toast(f'－ {m["word"]}', icon="🗑️")
