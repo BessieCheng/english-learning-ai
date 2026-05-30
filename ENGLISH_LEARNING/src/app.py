@@ -2035,17 +2035,20 @@ elif page == "today":  # noqa: E501
                     "animal": ("#F4C152", "#B0863A")}.get(THEME, ("#4A7C59", "#4A7C59"))
             _wjs2 = word["word"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
             components.html(f"""
+<style>html,body{{margin:0;padding:0;}}
+.spk{{background:#FFF;color:{_acc[1]};border:2px solid {_acc[0]};border-radius:16px;
+  padding:5px 14px;font-weight:700;font-size:13px;cursor:pointer;
+  font-family:'Zen Maru Gothic','Noto Sans JP',sans-serif;-webkit-tap-highlight-color:transparent;}}
+@media (max-width:480px){{ .spk{{padding:4px 11px;font-size:12px;border-radius:14px;}} }}
+</style>
 <div style="display:flex;justify-content:flex-end;">
-<button onclick="(function(){{ if(!window.speechSynthesis) return;
+<button class="spk" onclick="(function(){{ if(!window.speechSynthesis) return;
   var u=new SpeechSynthesisUtterance('{_wjs2}'); u.lang='en-US'; u.rate=0.85; u.volume=1;
   window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }})()"
-  style="background:#FFF;color:{_acc[1]};border:2px solid {_acc[0]};border-radius:22px;
-  padding:8px 22px;font-weight:700;font-size:14px;cursor:pointer;
-  font-family:'Zen Maru Gothic','Noto Sans JP',sans-serif;-webkit-tap-highlight-color:transparent;"
   onmouseover="this.style.background='#FAFAFA'"
   onmouseout="this.style.background='#FFF'">{t("today_listen")}</button>
 </div>
-""", height=50)
+""", height=40)
             # ── 単語カード（中央寄せ・枠付き）──
             st.markdown(
                 f'<div style="background:#FFF;border:1px solid #E8E8E8;'
@@ -2142,6 +2145,17 @@ div[class*="st-key-del_vocab_"] button {
 }
 div[class*="st-key-del_vocab_"] button:hover {
     background:#F2E4E4 !important; border-color:#D9B8B8 !important; color:#A83A36 !important;
+}
+/* 単語行（発音 iframe を含む列）をスマホでも折り返さず横一列に保つ */
+[data-testid="stHorizontalBlock"]:has(iframe) {
+    flex-wrap:nowrap !important; gap:6px !important; align-items:center !important;
+}
+[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"] {
+    min-width:0 !important; flex-shrink:1 !important;
+}
+/* 情報列以外（ボタン列）は縮ませない */
+[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:not(:first-child) {
+    flex:0 0 48px !important; width:48px !important;
 }
 </style>
 """, unsafe_allow_html=True)
