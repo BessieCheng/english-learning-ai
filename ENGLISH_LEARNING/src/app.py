@@ -112,6 +112,7 @@ LANG = {
     "theme_label":   {"ja": "テーマ",         "zh": "主題"},
     "theme_zen":     {"ja": "禅・無印",       "zh": "禅・無印"},
     "theme_pastel":  {"ja": "パステル",       "zh": "粉彩健康風"},
+    "theme_animal":  {"ja": "どうぶつ",       "zh": "動物風"},
 
     # ── サイドバー / 側邊欄 ──
     "side_subtitle": {"ja": "英文分析",          "zh": "英文分析"},
@@ -275,16 +276,30 @@ st.sidebar.markdown(
     f'margin:6px 0 2px;text-transform:uppercase;">{t("theme_label")}</div>',
     unsafe_allow_html=True,
 )
+_theme_labels = {"zen": t("theme_zen"), "pastel": t("theme_pastel"), "animal": t("theme_animal")}
+_theme_keys = list(_theme_labels.keys())
 _theme_choice = st.sidebar.radio(
-    "Theme", [t("theme_zen"), t("theme_pastel")],
-    index=0 if st.session_state["theme"] == "zen" else 1,
+    "Theme", [_theme_labels[k] for k in _theme_keys],
+    index=_theme_keys.index(st.session_state["theme"]) if st.session_state["theme"] in _theme_keys else 0,
     label_visibility="collapsed", key="theme_sel",
 )
-st.session_state["theme"] = "zen" if _theme_choice == t("theme_zen") else "pastel"
+st.session_state["theme"] = next(k for k in _theme_keys if _theme_labels[k] == _theme_choice)
 THEME = st.session_state["theme"]
 
 # ── 標題（テーマで配色を切替）──
-if THEME == "pastel":
+if THEME == "animal":
+    st.markdown(
+        '<div style="padding:6px 0 18px;margin-bottom:24px;">'
+        '<div style="font-family:\'Mochiy Pop One\',sans-serif;font-size:28px;font-weight:400;'
+        'letter-spacing:.02em;color:#F49CB8;line-height:1.55;'
+        'text-shadow:2px 2px 0 #FFF,-2px 2px 0 #FFF,2px -2px 0 #FFF,-2px -2px 0 #FFF,0 4px 0 #E98AA8;">'
+        f'🐹 {t("title_main")}</div>'
+        '<div style="font-size:14px;font-weight:700;color:#A9B98A;letter-spacing:.01em;margin-top:8px;">'
+        f'{t("title_sub")}</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+elif THEME == "pastel":
     st.markdown(
         '<div style="padding:6px 0 18px;margin-bottom:24px;">'
         '<div style="font-size:24px;font-weight:600;letter-spacing:.01em;color:#3A3A4A;line-height:1.4;">'
@@ -924,8 +939,182 @@ code { background: #FBEDF3 !important; color: #E27BA0 !important; font-size: .85
 </style>
 """
 
+# ── 動物風テーマ（クリーム地＋はちみつ色＋ピンクぷくぷく見出し＋丸文字）──
+ANIMAL_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Mochiy+Pop+One&display=swap');
+
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #FFFBF2 !important;
+    color: #6B5644 !important;
+}
+[data-testid="stHeader"] { background: transparent !important; background-color: rgba(0,0,0,0) !important; }
+[data-testid="stToolbar"] { background: transparent !important; }
+[data-testid="stAppViewContainer"] {
+    font-family: 'Zen Maru Gothic','Helvetica Neue', sans-serif !important;
+    font-weight: 500;
+}
+.main .block-container {
+    max-width: 100%; padding: 2rem 2rem 4rem; overflow-x: hidden;
+    box-sizing: border-box; background: #FFFBF2;
+}
+
+/* 見出し（丸くてぷにっと）*/
+h1 { font-family:'Mochiy Pop One',sans-serif !important; font-size:1.55rem !important; font-weight:400 !important; color:#F49CB8 !important; letter-spacing:.01em !important;
+     text-shadow:1.5px 1.5px 0 #FFF,-1.5px 1.5px 0 #FFF,1.5px -1.5px 0 #FFF,-1.5px -1.5px 0 #FFF,0 3px 0 #E98AA8 !important; }
+h2 { font-family:'Mochiy Pop One',sans-serif !important; font-size:1.2rem !important; font-weight:400 !important; color:#F49CB8 !important; border-bottom:none !important; padding-bottom:.2rem !important;
+     text-shadow:1.5px 1.5px 0 #FFF,-1.5px 1.5px 0 #FFF,1.5px -1.5px 0 #FFF,-1.5px -1.5px 0 #FFF,0 3px 0 #E98AA8 !important; }
+h3 { font-size:1.08rem !important; font-weight:700 !important; color:#6B5644 !important; }
+.stCaption p { color:#B6A088 !important; font-size:12px !important; }
+[data-testid="stAppViewContainer"] p { line-height:1.75 !important; }
+
+h3 { position:relative !important; padding-left:18px !important; margin-top:8px !important; }
+h3::before {
+    content:'' !important; position:absolute !important; left:0 !important; top:50% !important;
+    transform:translateY(-50%) !important; width:11px !important; height:11px !important;
+    background:#9FD8A6 !important; border:2px solid #6B5644 !important; border-radius:50% !important;
+}
+
+/* サイドバー */
+[data-testid="stSidebar"] {
+    background-color:#FFFFFF !important; border-right:none !important;
+    box-shadow:2px 0 12px rgba(200,165,95,.07) !important;
+}
+[data-testid="stSidebar"] * { font-family:'Zen Maru Gothic',sans-serif !important; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] p { color:#8A7355 !important; }
+[data-testid="stSidebar"] .stRadio > div { gap:6px !important; }
+[data-testid="stSidebar"] .stRadio label {
+    font-size:14px !important; color:#8A7355 !important; padding:11px 16px !important; margin:0 !important;
+    border:none !important; border-radius:18px !important; background:#FBF0D8 !important;
+    transition:background .15s, color .15s !important;
+}
+[data-testid="stSidebar"] .stRadio label:hover { background:#FCE9C2 !important; color:#6B5644 !important; }
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    background:#F4C152 !important; color:#6B5644 !important; font-weight:700 !important;
+}
+[data-testid="stSidebar"] .stRadio label > div:first-child { display:none !important; }
+
+/* ボタン（茶色文字＋クリーム）*/
+.stButton > button {
+    background-color:#FFFFFF !important; color:#6B5644 !important;
+    border:2px solid #EFE1C8 !important; border-radius:18px !important;
+    font-family:'Zen Maru Gothic',sans-serif !important; font-weight:700 !important;
+    font-size:14px !important; padding:9px 22px !important; transition:all .18s !important;
+    white-space:normal !important; word-break:break-word !important; line-height:1.4 !important;
+    min-height:42px !important; box-shadow:0 2px 6px rgba(200,165,95,.08) !important;
+}
+.stButton > button:hover {
+    border-color:#F4C152 !important; color:#6B5644 !important; background-color:#FFF8E8 !important;
+    transform:translateY(-1px) !important; box-shadow:0 4px 12px rgba(200,165,95,.18) !important;
+}
+.stButton > button[kind="primary"], [data-testid="baseButton-primary"] {
+    background:linear-gradient(135deg,#F8CE63,#F4C152) !important; color:#6B5644 !important;
+    border:2px solid #E3AE3C !important; box-shadow:0 4px 14px rgba(228,174,58,.30) !important;
+}
+[data-testid="baseButton-primary"]:hover {
+    background:linear-gradient(135deg,#F4C152,#E8AE3A) !important; color:#6B5644 !important;
+}
+
+/* 入力 */
+input, textarea, select,
+[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea {
+    background:#FFFFFF !important; border:2px solid #EFE1C8 !important; border-radius:14px !important;
+    color:#6B5644 !important; font-family:'Zen Maru Gothic',sans-serif !important; font-size:14px !important;
+}
+input:focus, textarea:focus { border-color:#F4C152 !important; box-shadow:0 0 0 3px rgba(244,193,82,.22) !important; }
+
+/* メトリクス */
+[data-testid="metric-container"], [data-testid="stMetric"] {
+    background:#FFFFFF !important; border:none !important; border-radius:20px !important;
+    padding:20px 22px !important; box-shadow:0 3px 14px rgba(200,165,95,.10) !important;
+}
+[data-testid="stMetricValue"] { font-size:2rem !important; font-weight:700 !important; color:#E8AE3A !important; }
+[data-testid="stMetricLabel"] { font-size:11px !important; color:#B6A088 !important; letter-spacing:.06em !important; font-weight:700 !important; }
+
+/* エクスパンダー */
+[data-testid="stExpander"] {
+    border:none !important; border-radius:20px !important; background:#FFFFFF !important;
+    box-shadow:0 3px 14px rgba(200,165,95,.08) !important; margin-bottom:12px !important;
+    transition:box-shadow .18s, transform .18s !important; overflow:hidden !important;
+}
+[data-testid="stExpander"]:hover { box-shadow:0 6px 20px rgba(200,165,95,.16) !important; transform:translateY(-1px) !important; }
+[data-testid="stExpander"] summary { background:#FFFFFF !important; font-size:14px !important; color:#8A7355 !important; font-weight:700 !important; padding:4px 4px !important; }
+[data-testid="stExpander"] summary:hover { color:#E8AE3A !important; }
+
+/* タブ（ピル風）*/
+[data-testid="stTabs"] [role="tablist"] { border-bottom:none !important; gap:8px !important; }
+[data-testid="stTabs"] [data-baseweb="tab-highlight"], [data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display:none !important; height:0 !important; background:transparent !important;
+}
+[data-testid="stTabs"] button[role="tab"] {
+    font-size:13px !important; color:#B6A088 !important; font-weight:700 !important;
+    padding:8px 18px !important; border-bottom:none !important; background:#FBF0D8 !important; border-radius:14px !important;
+}
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] { color:#6B5644 !important; background:#F4C152 !important; }
+
+/* alert */
+[data-testid="stAlert"] { border-radius:16px !important; border-left-width:0 !important; font-size:14px !important; }
+.stSuccess { background:#EFF7E6 !important; color:#5C7A3A !important; }
+.stInfo    { background:#FFF6E0 !important; color:#A6792A !important; }
+.stWarning { background:#FDEFE0 !important; color:#B5742A !important; }
+
+/* progress */
+[data-testid="stProgress"] > div { background:#FBEAC6 !important; border-radius:10px !important; height:8px !important; overflow:hidden !important; }
+[data-testid="stProgress"] > div > div { background:linear-gradient(90deg,#F8CE63,#E8AE3A) !important; border-radius:10px !important; height:8px !important; }
+[data-testid="stProgress"] p { color:#B6A088 !important; font-size:12px !important; }
+
+hr { border-color:#F0E4CE !important; border-width:1px 0 0 !important; }
+code { background:#FCEFCF !important; color:#B0863A !important; font-size:.85em !important; padding:1px 7px !important; border-radius:8px !important; }
+
+/* file uploader */
+[data-testid="stFileUploader"] { border:none !important; border-radius:20px !important; background:#FFFFFF !important; box-shadow:0 3px 14px rgba(200,165,95,.08) !important; }
+[data-testid="stFileUploader"] section { background:#FFFFFF !important; border:2px dashed #EAD8B4 !important; border-radius:16px !important; }
+[data-testid="stFileUploader"] button, [data-testid="stFileUploaderDropzone"] button {
+    background:#FFFFFF !important; color:#6B5644 !important; border:2px solid #F4C152 !important;
+    border-radius:14px !important; font-weight:700 !important; box-shadow:none !important;
+}
+[data-testid="stFileUploader"] button:hover { background:#FFF8E8 !important; color:#E8AE3A !important; }
+
+/* chat input */
+[data-testid="stBottom"], [data-testid="stBottomBlockContainer"], [data-testid="stChatInput"] { background:#FFFBF2 !important; }
+[data-testid="stChatInput"] > div { background:#FFFFFF !important; border:2px solid #EFE1C8 !important; border-radius:18px !important; }
+[data-testid="stChatInput"] textarea { background:#FFFFFF !important; color:#6B5644 !important; }
+[data-testid="stChatInput"] button { background:#F4C152 !important; border-radius:14px !important; }
+
+/* selectbox */
+[data-testid="stSelectbox"] > div > div {
+    background:#FFFFFF !important; border:2px solid #EFE1C8 !important; border-radius:14px !important;
+    color:#6B5644 !important; font-size:14px !important;
+}
+[data-testid="stToast"] { background:#F4C152 !important; color:#6B5644 !important; border-radius:14px !important; font-size:14px !important; }
+
+@media (max-width: 768px) {
+    .main .block-container { padding:.75rem .75rem 3rem !important; }
+    h1 { font-size:1.2rem !important; line-height:1.5 !important; }
+    h2 { font-size:1.05rem !important; }
+    h3 { font-size:.95rem !important; }
+    [data-testid="column"] { overflow:hidden; min-width:0; }
+    code, pre { white-space:pre-wrap !important; word-break:break-word !important; }
+    [data-testid="stTabs"] button[role="tab"] { padding:7px 12px !important; font-size:12px !important; }
+    [data-testid="stMetricValue"] { font-size:1.6rem !important; }
+    .stButton > button { font-size:13px !important; padding:8px 14px !important; min-height:40px !important; }
+    [data-testid="stExpander"] summary p { font-size:13px !important; }
+}
+
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-thumb { background:#EAD8B4; border-radius:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+[data-testid="collapsedControl"] button, [data-testid="stSidebarCollapsedControl"] button { font-size:0 !important; }
+[data-testid="collapsedControl"] button::after, [data-testid="stSidebarCollapsedControl"] button::after {
+    content:'☰' !important; font-size:22px !important; color:#E8AE3A !important;
+}
+</style>
+"""
+
 # テーマに応じて CSS を注入
-st.markdown(PASTEL_CSS if THEME == "pastel" else ZEN_CSS, unsafe_allow_html=True)
+_theme_css = {"pastel": PASTEL_CSS, "animal": ANIMAL_CSS}.get(THEME, ZEN_CSS)
+st.markdown(_theme_css, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
 # 側邊欄：導覽選單
