@@ -137,6 +137,20 @@ def init_database():
         )
     """)
 
+    # ── 建立 translation_quiz 表（AI 翻譯練習履歷）──────────────
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS translation_quiz (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            toeic_level   TEXT,
+            source_zh     TEXT    NOT NULL,
+            user_en       TEXT    NOT NULL,
+            correct_en    TEXT,
+            score         INTEGER,
+            feedback_json TEXT,
+            created_at    TEXT    DEFAULT (datetime('now', 'localtime'))
+        )
+    """)
+
     conn.commit()
     conn.close()
     print(f"✅ 資料庫初始化完成：{DB_PATH}")
@@ -250,6 +264,41 @@ def delete_session(session_id):
     cursor.execute("DELETE FROM grammar_errors WHERE session_id = ?", (session_id,))
     cursor.execute("DELETE FROM vocabulary WHERE session_id = ?", (session_id,))
     cursor.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+    conn.commit()
+    conn.close()
+
+
+# ── 翻譯練習履歷 ──────────────────────────────────────────────
+def save_translation_quiz(toeic_level, source_zh, user_en, correct_en, score, feedback_json):
+    """儲存一次翻譯練習記錄，回傳新記錄 ID。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO translation_quiz
+            (toeic_level, source_zh, user_en, correct_en, score, feedback_json)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (toeic_level, source_zh, user_en, correct_en, score, feedback_json))
+    conn.commit()
+    quiz_id = cursor.lastrowid
+    conn.close()
+    return quiz_id
+
+
+def get_all_translation_quiz():
+    """查詢所有翻譯練習履歷，由新到舊。回傳 list of dict。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM translation_quiz ORDER BY created_at DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def delete_translation_quiz(quiz_id):
+    """刪除一筆翻譯練習記錄。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM translation_quiz WHERE id = ?", (quiz_id,))
     conn.commit()
     conn.close()
 

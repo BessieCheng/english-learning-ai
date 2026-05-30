@@ -16,7 +16,9 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(__file__))
 from database import (init_database, get_all_sessions, get_vocabulary_due_today,
                        delete_session, get_all_vocabulary, delete_vocabulary,
-                       save_news_article, get_saved_news, delete_saved_news)
+                       save_news_article, get_saved_news, delete_saved_news,
+                       save_translation_quiz, get_all_translation_quiz,
+                       delete_translation_quiz)
 
 load_dotenv()
 init_database()
@@ -79,6 +81,30 @@ LANG = {
     "nav_today":     {"ja": "今日の単語",     "zh": "今日單字"},
     "nav_news":      {"ja": "ニュース",       "zh": "新聞搜尋"},
     "nav_upload":    {"ja": "分析",          "zh": "上傳分析"},
+    "nav_quiz":      {"ja": "翻訳練習",       "zh": "翻譯練習"},
+    # ── 翻譯練習頁 ──
+    "quiz_header":   {"ja": "翻訳練習",       "zh": "翻譯練習"},
+    "quiz_level":    {"ja": "英語レベル",     "zh": "英文程度"},
+    "quiz_gen_btn":  {"ja": "問題を出す",     "zh": "出題"},
+    "quiz_next":     {"ja": "次の問題",       "zh": "下一題"},
+    "quiz_question": {"ja": "次の文を英語に訳してください", "zh": "請把下面這句翻成英文"},
+    "quiz_answer_in":{"ja": "英訳を入力",     "zh": "輸入你的英文翻譯"},
+    "quiz_submit":   {"ja": "提出して採点",   "zh": "提交批改"},
+    "quiz_your_ans": {"ja": "あなたの答え",   "zh": "你的答案"},
+    "quiz_correct":  {"ja": "模範解答",       "zh": "正確答案"},
+    "quiz_score":    {"ja": "スコア",         "zh": "分數"},
+    "quiz_errors":   {"ja": "修正ポイント",   "zh": "錯誤修正"},
+    "quiz_feedback": {"ja": "講評",           "zh": "講評"},
+    "quiz_empty":    {"ja": "英訳を入力してください", "zh": "請先輸入英文翻譯"},
+    "quiz_gen_first":{"ja": "まず問題を出してください", "zh": "請先出題"},
+    "quiz_grading":  {"ja": "採点中...",       "zh": "批改中..."},
+    "quiz_gen_ing":  {"ja": "問題を作成中...", "zh": "出題中..."},
+    "quiz_no_hist":  {"ja": "まだ翻訳練習の記録がありません", "zh": "還沒有翻譯練習記錄"},
+    # ── 履歷頁分頁 ──
+    "hist_tab_audio":{"ja": "録音分析",       "zh": "錄音分析"},
+    "hist_tab_quiz": {"ja": "翻訳練習",       "zh": "翻譯練習"},
+    # ── 新聞全文閱讀 ──
+    "news_fulltext": {"ja": "全文を読む",     "zh": "全文閱讀"},
 
     # ── サイドバー / 側邊欄 ──
     "side_subtitle": {"ja": "英文分析",          "zh": "英文分析"},
@@ -639,8 +665,8 @@ with st.sidebar:
         f'<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:18px 0 8px;">{t("side_menu")}</div>',
         unsafe_allow_html=True
     )
-    PAGE_KEYS = ["history", "today", "news", "upload"]
-    page_labels = [t("nav_history"), t("nav_today"), t("nav_news"), t("nav_upload")]
+    PAGE_KEYS = ["history", "today", "news", "upload", "quiz"]
+    page_labels = [t("nav_history"), t("nav_today"), t("nav_news"), t("nav_upload"), t("nav_quiz")]
     # index で現在ページを記憶（言語切替でラベルが変わっても壊れない）
     if "page_idx" not in st.session_state:
         st.session_state["page_idx"] = 0
@@ -1179,6 +1205,15 @@ function saveToVocab(word) {{
                 import streamlit.components.v1 as components
                 components.html(html_block, height=max(320, len(body) // 2))
 
+                # ── 全文閱讀（純文字、舒適排版）──────────────────
+                with st.expander(t("news_fulltext")):
+                    st.markdown(
+                        f'<div style="font-family:Georgia,serif;font-size:16px;line-height:1.9;'
+                        f'color:#333;background:#FFF;border:1px solid #E8E8E8;border-radius:2px;'
+                        f'padding:24px 28px;">{body}</div>',
+                        unsafe_allow_html=True
+                    )
+
                 # ── 複製文章按鈕 ──────────────────────────────────
                 with st.expander(t("news_copy_exp")):
                     st.code(body, language=None)
@@ -1246,98 +1281,138 @@ elif page == "history":
 
     st.header(t("hist_header"))
 
-    sessions = get_all_sessions()
+    tab_audio, tab_quiz = st.tabs([t("hist_tab_audio"), t("hist_tab_quiz")])
 
-    if not sessions:
-        st.info(t("hist_empty"))
-    else:
-        st.write(f"{t('hist_count1')}**{len(sessions)}**{t('hist_count2')}")
+    with tab_audio:
+        sessions = get_all_sessions()
 
-        for s in sessions:
-            with st.expander(f"{s['created_at']}　｜　{s['audio_file']}　｜　{t('hist_score')}{s['score']} / 10"):
-                st.info(f"{s['summary']}")
+        if not sessions:
+            st.info(t("hist_empty"))
+        else:
+            st.write(f"{t('hist_count1')}**{len(sessions)}**{t('hist_count2')}")
 
-                analysis_h = json.loads(s['analysis_json']) if s.get('analysis_json') else {}
-                diarized_h = json.loads(s['diarized_json']) if s.get('diarized_json') else None
-                label_a_h = diarized_h.get("speaker_a_label", "Speaker A") if diarized_h else "Speaker A"
-                label_b_h = diarized_h.get("speaker_b_label", "Speaker B") if diarized_h else "Speaker B"
+            for s in sessions:
+                with st.expander(f"{s['created_at']}　｜　{s['audio_file']}　｜　{t('hist_score')}{s['score']} / 10"):
+                    st.info(f"{s['summary']}")
 
-                tab_t, tab_g, tab_p, tab_v = st.tabs([t("hist_tab_t"), t("hist_tab_g"), t("hist_tab_p"), t("hist_tab_v")])
+                    analysis_h = json.loads(s['analysis_json']) if s.get('analysis_json') else {}
+                    diarized_h = json.loads(s['diarized_json']) if s.get('diarized_json') else None
+                    label_a_h = diarized_h.get("speaker_a_label", "Speaker A") if diarized_h else "Speaker A"
+                    label_b_h = diarized_h.get("speaker_b_label", "Speaker B") if diarized_h else "Speaker B"
 
-                with tab_t:
-                    if diarized_h and diarized_h.get("segments"):
-                        for seg in diarized_h["segments"]:
-                            spk = seg.get("speaker", "A")
-                            label = label_a_h if spk == "A" else label_b_h
-                            color_bg = "#F0F5FA" if spk == "A" else "#F0F7F2"
-                            color_bd = "#6B8FC4" if spk == "A" else "#4A7C59"
-                            st.markdown(
-                                f'<div style="background:{color_bg};border-left:3px solid {color_bd};'
-                                f'padding:8px 12px;margin:4px 0;border-radius:2px;">'
-                                f'<b style="color:{color_bd};font-size:12px;letter-spacing:.05em">{label}</b><br>'
-                                f'<span style="color:#333;font-size:13px">{seg.get("text","")}</span></div>',
-                                unsafe_allow_html=True
-                            )
-                    else:
-                        st.text(s['transcript'])
+                    tab_t, tab_g, tab_p, tab_v = st.tabs([t("hist_tab_t"), t("hist_tab_g"), t("hist_tab_p"), t("hist_tab_v")])
 
-                with tab_g:
-                    errors_h = analysis_h.get("grammar_errors", [])
-                    if errors_h:
-                        for err in errors_h:
-                            spk = err.get("speaker", "A")
-                            spk_label = label_a_h if spk == "A" else label_b_h
-                            color = "#6B8FC4" if spk == "A" else "#4A7C59"
-                            st.markdown(
-                                f'<div style="border-left:3px solid {color};padding:6px 10px;margin:6px 0;">'
-                                f'<span style="color:{color};font-size:12px">[{spk_label}]</span><br>'
-                                f'❌ <b>{err.get("original")}</b>　→　✅ <b>{err.get("correction")}</b><br>'
-                                f'<span style="color:#888;font-size:13px">{err.get("explanation","")}</span></div>',
-                                unsafe_allow_html=True
-                            )
-                    else:
-                        st.success(t("hist_no_grammar"))
+                    with tab_t:
+                        if diarized_h and diarized_h.get("segments"):
+                            for seg in diarized_h["segments"]:
+                                spk = seg.get("speaker", "A")
+                                label = label_a_h if spk == "A" else label_b_h
+                                color_bg = "#F0F5FA" if spk == "A" else "#F0F7F2"
+                                color_bd = "#6B8FC4" if spk == "A" else "#4A7C59"
+                                st.markdown(
+                                    f'<div style="background:{color_bg};border-left:3px solid {color_bd};'
+                                    f'padding:8px 12px;margin:4px 0;border-radius:2px;">'
+                                    f'<b style="color:{color_bd};font-size:12px;letter-spacing:.05em">{label}</b><br>'
+                                    f'<span style="color:#333;font-size:13px">{seg.get("text","")}</span></div>',
+                                    unsafe_allow_html=True
+                                )
+                        else:
+                            st.text(s['transcript'])
 
-                with tab_p:
-                    tips_h = analysis_h.get("pronunciation_tips", [])
-                    if tips_h:
-                        for tip in tips_h:
-                            if isinstance(tip, dict):
-                                spk = tip.get("speaker", "A")
+                    with tab_g:
+                        errors_h = analysis_h.get("grammar_errors", [])
+                        if errors_h:
+                            for err in errors_h:
+                                spk = err.get("speaker", "A")
                                 spk_label = label_a_h if spk == "A" else label_b_h
                                 color = "#6B8FC4" if spk == "A" else "#4A7C59"
                                 st.markdown(
                                     f'<div style="border-left:3px solid {color};padding:6px 10px;margin:6px 0;">'
-                                    f'<span style="color:{color};font-size:12px">[{spk_label}]</span>　'
-                                    f'<b>{tip.get("example","")}</b><br>'
-                                    f'<span style="color:#888;font-size:13px">{tip.get("tip","")}</span></div>',
+                                    f'<span style="color:{color};font-size:12px">[{spk_label}]</span><br>'
+                                    f'❌ <b>{err.get("original")}</b>　→　✅ <b>{err.get("correction")}</b><br>'
+                                    f'<span style="color:#888;font-size:13px">{err.get("explanation","")}</span></div>',
                                     unsafe_allow_html=True
                                 )
-                            else:
-                                st.write(f"• {tip}")
-                    else:
-                        st.info(t("hist_no_pron"))
+                        else:
+                            st.success(t("hist_no_grammar"))
 
-                with tab_v:
-                    vocab_h = analysis_h.get("vocabulary_highlights", [])
-                    if vocab_h:
-                        for v in vocab_h:
-                            pos_tag = f"　`{v.get('part_of_speech')}`" if v.get('part_of_speech') else ""
-                            st.markdown(
-                                f'**{v.get("word","")}**{pos_tag}　{v.get("definition","")}<br>'
-                                f'<span style="color:#aaa;font-size:13px">{t("hist_example")}{v.get("example","")}</span>',
-                                unsafe_allow_html=True
-                            )
-                            st.markdown("---")
-                    else:
-                        st.info(t("hist_no_vocab"))
+                    with tab_p:
+                        tips_h = analysis_h.get("pronunciation_tips", [])
+                        if tips_h:
+                            for tip in tips_h:
+                                if isinstance(tip, dict):
+                                    spk = tip.get("speaker", "A")
+                                    spk_label = label_a_h if spk == "A" else label_b_h
+                                    color = "#6B8FC4" if spk == "A" else "#4A7C59"
+                                    st.markdown(
+                                        f'<div style="border-left:3px solid {color};padding:6px 10px;margin:6px 0;">'
+                                        f'<span style="color:{color};font-size:12px">[{spk_label}]</span>　'
+                                        f'<b>{tip.get("example","")}</b><br>'
+                                        f'<span style="color:#888;font-size:13px">{tip.get("tip","")}</span></div>',
+                                        unsafe_allow_html=True
+                                    )
+                                else:
+                                    st.write(f"• {tip}")
+                        else:
+                            st.info(t("hist_no_pron"))
 
-                col_space, col_btn = st.columns([4, 1])
-                with col_btn:
-                    if st.button(t("hist_delete"), key=f"delete_{s['id']}",
-                                 type="secondary", use_container_width=True):
-                        delete_session(s['id'])
-                        st.toast(t("hist_del_toast"), icon="🗑️")
+                    with tab_v:
+                        vocab_h = analysis_h.get("vocabulary_highlights", [])
+                        if vocab_h:
+                            for v in vocab_h:
+                                pos_tag = f"　`{v.get('part_of_speech')}`" if v.get('part_of_speech') else ""
+                                st.markdown(
+                                    f'**{v.get("word","")}**{pos_tag}　{v.get("definition","")}<br>'
+                                    f'<span style="color:#aaa;font-size:13px">{t("hist_example")}{v.get("example","")}</span>',
+                                    unsafe_allow_html=True
+                                )
+                                st.markdown("---")
+                        else:
+                            st.info(t("hist_no_vocab"))
+
+                    col_space, col_btn = st.columns([4, 1])
+                    with col_btn:
+                        if st.button(t("hist_delete"), key=f"delete_{s['id']}",
+                                     type="secondary", use_container_width=True):
+                            delete_session(s['id'])
+                            st.toast(t("hist_del_toast"), icon="🗑️")
+                            st.rerun()
+
+    with tab_quiz:
+        quizzes = get_all_translation_quiz()
+        if not quizzes:
+            st.info(t("quiz_no_hist"))
+        else:
+            for q in quizzes:
+                _sc = q.get("score", 0)
+                with st.expander(f"{q['created_at']}　｜　{q.get('toeic_level','')}　｜　{t('quiz_score')} {_sc}/100"):
+                    st.markdown(
+                        f'<div style="font-size:11px;letter-spacing:.1em;color:#CCC;">{t("quiz_question")}</div>'
+                        f'<div style="font-size:16px;color:#1A1A1A;margin:4px 0 12px;">{q.get("source_zh","")}</div>',
+                        unsafe_allow_html=True)
+                    _c1, _c2 = st.columns(2)
+                    with _c1:
+                        st.markdown(f'<div style="font-size:11px;color:#B05050;">{t("quiz_your_ans")}</div>'
+                                    f'<div style="font-size:13px;color:#333;">{q.get("user_en","")}</div>', unsafe_allow_html=True)
+                    with _c2:
+                        st.markdown(f'<div style="font-size:11px;color:#4A7C59;">{t("quiz_correct")}</div>'
+                                    f'<div style="font-size:13px;color:#333;">{q.get("correct_en","")}</div>', unsafe_allow_html=True)
+                    import json as _jq
+                    try:
+                        _fb = _jq.loads(q.get("feedback_json") or "{}")
+                    except Exception:
+                        _fb = {}
+                    for _e in _fb.get("errors", []):
+                        st.markdown(
+                            f'<div style="border-left:2px solid #E0E0E0;padding:2px 10px;margin:4px 0;">'
+                            f'<span style="color:#B05050;text-decoration:line-through;">{_e.get("wrong","")}</span>　→　'
+                            f'<span style="color:#4A7C59;">{_e.get("right","")}</span><br>'
+                            f'<span style="font-size:12px;color:#999;">{_e.get("note","")}</span></div>',
+                            unsafe_allow_html=True)
+                    if _fb.get("feedback"):
+                        st.info(f'{t("quiz_feedback")}：{_fb["feedback"]}')
+                    if st.button(t("hist_delete"), key=f"del_quiz_{q['id']}", use_container_width=True):
+                        delete_translation_quiz(q["id"])
                         st.rerun()
 
 # ══════════════════════════════════════════════════════════════
@@ -1568,3 +1643,119 @@ function del(id){{
 </script>
 """
         components.html(list_html, height=min(len(filtered) * 62 + 10, 1400), scrolling=True)
+
+# ══════════════════════════════════════════════════════════════
+# 頁面五：翻譯練習（AI 出題 → 作答 → 批改 → 存履歷）
+# ══════════════════════════════════════════════════════════════
+elif page == "quiz":
+    from quiz_func import generate_quiz, grade_translation
+    from news_search import TOEIC_LEVELS
+
+    st.header(t("quiz_header"))
+
+    level_key = st.selectbox(t("quiz_level"), list(TOEIC_LEVELS.keys()), key="quiz_level_sel")
+
+    # 出題ボタン
+    if st.button(t("quiz_gen_btn"), type="primary", use_container_width=True, key="quiz_gen"):
+        with st.spinner(t("quiz_gen_ing")):
+            try:
+                st.session_state["quiz_q"] = generate_quiz(level_key)
+                st.session_state["quiz_q_level"] = level_key
+                st.session_state.pop("quiz_result", None)  # 清空上次批改
+            except Exception as e:
+                st.error(f"{e}")
+
+    quiz_q = st.session_state.get("quiz_q")
+    if quiz_q:
+        # ── 題目卡片（中文句子）──
+        st.markdown(
+            f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid #4A7C59;'
+            f'border-radius:2px;padding:28px 24px;margin:12px 0;">'
+            f'<div style="font-size:11px;letter-spacing:.2em;color:#CCC;margin-bottom:12px;">'
+            f'{t("quiz_question")}</div>'
+            f'<div style="font-size:22px;font-weight:400;color:#1A1A1A;line-height:1.6;">'
+            f'{quiz_q["zh"]}</div></div>',
+            unsafe_allow_html=True
+        )
+
+        user_en = st.text_area(t("quiz_answer_in"), key="quiz_user_en", height=100,
+                               placeholder="Type your English translation here...")
+
+        if st.button(t("quiz_submit"), type="primary", use_container_width=True, key="quiz_submit_btn"):
+            if not user_en.strip():
+                st.warning(t("quiz_empty"))
+            else:
+                with st.spinner(t("quiz_grading")):
+                    try:
+                        result = grade_translation(quiz_q["zh"], user_en.strip(),
+                                                   st.session_state.get("quiz_q_level", level_key))
+                        st.session_state["quiz_result"] = result
+                        # 存履歷
+                        import json as _j
+                        save_translation_quiz(
+                            st.session_state.get("quiz_q_level", level_key),
+                            quiz_q["zh"], user_en.strip(),
+                            result.get("correct", ""), result.get("score", 0),
+                            _j.dumps(result, ensure_ascii=False)
+                        )
+                    except Exception as e:
+                        st.error(f"{e}")
+
+        # ── 批改結果 ──
+        result = st.session_state.get("quiz_result")
+        if result:
+            score = result.get("score", 0)
+            score_color = "#4A7C59" if score >= 80 else ("#C4A45A" if score >= 60 else "#B05050")
+            st.markdown(
+                f'<div style="text-align:center;margin:16px 0;">'
+                f'<span style="font-size:13px;color:#AAA;letter-spacing:.1em;">{t("quiz_score")}</span><br>'
+                f'<span style="font-size:42px;font-weight:300;color:{score_color};">{score}</span>'
+                f'<span style="font-size:18px;color:#CCC;"> / 100</span></div>',
+                unsafe_allow_html=True
+            )
+            # 你的答案 vs 正確答案 並列
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown(
+                    f'<div style="border:1px solid #E8E8E8;border-left:3px solid #B05050;'
+                    f'border-radius:2px;padding:12px 14px;background:#FFF;">'
+                    f'<div style="font-size:11px;letter-spacing:.1em;color:#B05050;margin-bottom:6px;">'
+                    f'{t("quiz_your_ans")}</div>'
+                    f'<div style="font-size:14px;color:#333;line-height:1.6;">{st.session_state.get("quiz_user_en","")}</div></div>',
+                    unsafe_allow_html=True
+                )
+            with c2:
+                st.markdown(
+                    f'<div style="border:1px solid #E8E8E8;border-left:3px solid #4A7C59;'
+                    f'border-radius:2px;padding:12px 14px;background:#FFF;">'
+                    f'<div style="font-size:11px;letter-spacing:.1em;color:#4A7C59;margin-bottom:6px;">'
+                    f'{t("quiz_correct")}</div>'
+                    f'<div style="font-size:14px;color:#333;line-height:1.6;">{result.get("correct","")}</div></div>',
+                    unsafe_allow_html=True
+                )
+            # 錯誤修正
+            errors = result.get("errors", [])
+            if errors:
+                st.markdown(f'<div style="font-size:12px;letter-spacing:.1em;color:#888;margin:16px 0 8px;">{t("quiz_errors")}</div>', unsafe_allow_html=True)
+                for err in errors:
+                    st.markdown(
+                        f'<div style="border-left:2px solid #E0E0E0;padding:4px 12px;margin:6px 0;">'
+                        f'<span style="color:#B05050;text-decoration:line-through;">{err.get("wrong","")}</span>'
+                        f'　→　<span style="color:#4A7C59;font-weight:500;">{err.get("right","")}</span><br>'
+                        f'<span style="font-size:12px;color:#999;">{err.get("note","")}</span></div>',
+                        unsafe_allow_html=True
+                    )
+            # 講評
+            if result.get("feedback"):
+                st.info(f'{t("quiz_feedback")}：{result["feedback"]}')
+
+            # 下一題
+            if st.button(t("quiz_next"), use_container_width=True, key="quiz_next_btn"):
+                with st.spinner(t("quiz_gen_ing")):
+                    try:
+                        st.session_state["quiz_q"] = generate_quiz(st.session_state.get("quiz_q_level", level_key))
+                        st.session_state.pop("quiz_result", None)
+                        st.session_state.pop("quiz_user_en", None)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"{e}")
