@@ -457,6 +457,10 @@ input:focus, textarea:focus {
     color: #4A7C59 !important; border-bottom-color: #4A7C59 !important;
     font-weight: 500 !important;
 }
+/* Streamlit 既定の赤いハイライトバーを消す（緑の下線だけ残す）*/
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+    display: none !important; background: transparent !important; height: 0 !important;
+}
 
 /* ── info / success / warning / error ── */
 [data-testid="stAlert"] {
