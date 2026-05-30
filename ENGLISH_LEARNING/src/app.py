@@ -837,6 +837,11 @@ input:focus, textarea:focus { border-color: #F4A9C4 !important; box-shadow: 0 0 
 
 /* ── タブ（ピル風）── */
 [data-testid="stTabs"] [role="tablist"] { border-bottom: none !important; gap: 8px !important; }
+/* 選択中タブの下線（ハイライトバー・下ボーダー）を消す */
+[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+[data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display: none !important; height: 0 !important; background: transparent !important;
+}
 [data-testid="stTabs"] button[role="tab"] {
     font-size: 13px !important; color: #9A9AB0 !important;
     letter-spacing: .01em !important; font-weight: 700 !important;
@@ -1881,22 +1886,22 @@ function spk(w){{
 """
         components.html(list_html, height=min(len(filtered) * 62 + 10, 1400), scrolling=True)
 
-        # ── 単語削除（iframe からは sandbox で親フレームを操作できないため、
-        #    Streamlit ネイティブのコントロールで確実に削除する）──
-        with st.expander(t("today_del_exp")):
-            del_options = {f'{v["word"]}': v["id"] for v in filtered}
-            if del_options:
-                dc1, dc2 = st.columns([4, 1])
-                with dc1:
-                    _sel_word = st.selectbox(
-                        t("today_del_pick"), list(del_options.keys()),
-                        label_visibility="collapsed", key="vocab_del_sel",
-                    )
-                with dc2:
-                    if st.button(t("today_del_btn"), use_container_width=True, key="vocab_del_btn"):
-                        delete_vocabulary(int(del_options[_sel_word]))
-                        st.toast(f'🗑 {_sel_word}', icon="🗑️")
-                        st.rerun()
+        # ── 単語削除（iframe は sandbox で親フレームを操作できないため、
+        #    Streamlit ネイティブのコントロールで確実に削除する。常時表示）──
+        del_options = {f'{v["word"]}': v["id"] for v in filtered}
+        if del_options:
+            st.markdown(f"**{t('today_del_exp')}**")
+            dc1, dc2 = st.columns([4, 1])
+            with dc1:
+                _sel_word = st.selectbox(
+                    t("today_del_pick"), list(del_options.keys()),
+                    label_visibility="collapsed", key="vocab_del_sel",
+                )
+            with dc2:
+                if st.button(t("today_del_btn"), use_container_width=True, key="vocab_del_btn"):
+                    delete_vocabulary(int(del_options[_sel_word]))
+                    st.toast(f'🗑 {_sel_word}', icon="🗑️")
+                    st.rerun()
 
 # ══════════════════════════════════════════════════════════════
 # 頁面五：翻譯練習（AI 出題 → 作答 → 批改 → 存履歷）
