@@ -1655,13 +1655,23 @@ elif page == "quiz":
 
     level_key = st.selectbox(t("quiz_level"), list(TOEIC_LEVELS.keys()), key="quiz_level_sel")
 
+    # text_area の key を nonce で変える＝新しい問題ごとに入力欄を空にリセット
+    # （widget key を pop すると例外になるため nonce 方式を使う）
+    if "quiz_nonce" not in st.session_state:
+        st.session_state["quiz_nonce"] = 0
+
+    def _new_question(lvl):
+        st.session_state["quiz_q"] = generate_quiz(lvl)
+        st.session_state["quiz_q_level"] = lvl
+        st.session_state.pop("quiz_result", None)
+        st.session_state.pop("quiz_user_answer", None)
+        st.session_state["quiz_nonce"] += 1
+
     # 出題ボタン
     if st.button(t("quiz_gen_btn"), type="primary", use_container_width=True, key="quiz_gen"):
         with st.spinner(t("quiz_gen_ing")):
             try:
-                st.session_state["quiz_q"] = generate_quiz(level_key)
-                st.session_state["quiz_q_level"] = level_key
-                st.session_state.pop("quiz_result", None)  # 清空上次批改
+                _new_question(level_key)
             except Exception as e:
                 st.error(f"{e}")
 
@@ -1678,7 +1688,9 @@ elif page == "quiz":
             unsafe_allow_html=True
         )
 
-        user_en = st.text_area(t("quiz_answer_in"), key="quiz_user_en", height=100,
+        user_en = st.text_area(t("quiz_answer_in"),
+                               key=f"quiz_user_en_{st.session_state['quiz_nonce']}",
+                               height=100,
                                placeholder="Type your English translation here...")
 
         if st.button(t("quiz_submit"), type="primary", use_container_width=True, key="quiz_submit_btn"):
@@ -1690,13 +1702,13 @@ elif page == "quiz":
                         result = grade_translation(quiz_q["zh"], user_en.strip(),
                                                    st.session_state.get("quiz_q_level", level_key))
                         st.session_state["quiz_result"] = result
+                        st.session_state["quiz_user_answer"] = user_en.strip()
                         # 存履歷
-                        import json as _j
                         save_translation_quiz(
                             st.session_state.get("quiz_q_level", level_key),
                             quiz_q["zh"], user_en.strip(),
                             result.get("correct", ""), result.get("score", 0),
-                            _j.dumps(result, ensure_ascii=False)
+                            json.dumps(result, ensure_ascii=False)
                         )
                     except Exception as e:
                         st.error(f"{e}")
@@ -1721,7 +1733,7 @@ elif page == "quiz":
                     f'border-radius:2px;padding:12px 14px;background:#FFF;">'
                     f'<div style="font-size:11px;letter-spacing:.1em;color:#B05050;margin-bottom:6px;">'
                     f'{t("quiz_your_ans")}</div>'
-                    f'<div style="font-size:14px;color:#333;line-height:1.6;">{st.session_state.get("quiz_user_en","")}</div></div>',
+                    f'<div style="font-size:14px;color:#333;line-height:1.6;">{st.session_state.get("quiz_user_answer","")}</div></div>',
                     unsafe_allow_html=True
                 )
             with c2:
@@ -1753,9 +1765,7 @@ elif page == "quiz":
             if st.button(t("quiz_next"), use_container_width=True, key="quiz_next_btn"):
                 with st.spinner(t("quiz_gen_ing")):
                     try:
-                        st.session_state["quiz_q"] = generate_quiz(st.session_state.get("quiz_q_level", level_key))
-                        st.session_state.pop("quiz_result", None)
-                        st.session_state.pop("quiz_user_en", None)
+                        _new_question(st.session_state.get("quiz_q_level", level_key))
                         st.rerun()
                     except Exception as e:
                         st.error(f"{e}")
