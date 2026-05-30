@@ -72,7 +72,7 @@ Include 3-5 vocabulary items per article. All body text must be in English only.
 The word_glossary must cover all content words (nouns, verbs, adjectives, adverbs) in the body."""
 
     # 依序嘗試的模型（主要 → 備用）
-    models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
 
     last_error = None
     raw = None

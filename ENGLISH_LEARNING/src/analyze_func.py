@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
 
 
 def lookup_word(word):
