@@ -276,7 +276,7 @@ st.sidebar.markdown(
     f'margin:6px 0 2px;text-transform:uppercase;">{t("theme_label")}</div>',
     unsafe_allow_html=True,
 )
-_theme_labels = {"zen": t("theme_zen"), "pastel": t("theme_pastel"), "animal": t("theme_animal")}
+_theme_labels = {"zen": t("theme_zen"), "animal": t("theme_animal")}
 _theme_keys = list(_theme_labels.keys())
 _theme_choice = st.sidebar.radio(
     "Theme", [_theme_labels[k] for k in _theme_keys],
@@ -295,16 +295,6 @@ if THEME == "animal":
         'background:linear-gradient(transparent 60%, #FBD7E4 60%);padding:0 6px;">'
         f'{t("title_main")}</span>'
         '<div style="font-size:14px;font-weight:700;color:#A9B98A;letter-spacing:.01em;margin-top:16px;">'
-        f'{t("title_sub")}</div>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-elif THEME == "pastel":
-    st.markdown(
-        '<div style="padding:6px 0 18px;margin-bottom:24px;">'
-        '<div style="font-size:24px;font-weight:600;letter-spacing:.01em;color:#3A3A4A;line-height:1.4;">'
-        f'{t("title_main")}</div>'
-        '<div style="font-size:14px;font-weight:400;color:#9A9AB0;letter-spacing:.01em;margin-top:4px;">'
         f'{t("title_sub")}</div>'
         '</div>',
         unsafe_allow_html=True
@@ -1111,8 +1101,30 @@ code { background:#FCEFCF !important; color:#B0863A !important; font-size:.85em 
 """
 
 # テーマに応じて CSS を注入
-_theme_css = {"pastel": PASTEL_CSS, "animal": ANIMAL_CSS}.get(THEME, ZEN_CSS)
+_theme_css = {"animal": ANIMAL_CSS}.get(THEME, ZEN_CSS)
 st.markdown(_theme_css, unsafe_allow_html=True)
+
+# ── サイドバー開閉ボタンの Material アイコン文字化け対策（全テーマ共通）──
+#    フォント未読込時に "keyboard_double_arrow_left" 等の文字が出るのを防ぐ。
+st.markdown("""
+<style>
+[data-testid="stSidebarCollapseButton"] span,
+[data-testid="collapsedControl"] span,
+[data-testid="stSidebarCollapsedControl"] span { font-size:0 !important; }
+[data-testid="stSidebarCollapseButton"],
+[data-testid="collapsedControl"] button,
+[data-testid="stSidebarCollapsedControl"] button { position:relative !important; }
+[data-testid="stSidebarCollapseButton"]::after {
+    content:'«' !important; font-size:18px !important; color:#999 !important;
+    position:absolute !important; inset:0 !important;
+    display:flex !important; align-items:center !important; justify-content:center !important;
+}
+[data-testid="collapsedControl"] button::after,
+[data-testid="stSidebarCollapsedControl"] button::after {
+    content:'☰' !important; font-size:20px !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
 # 側邊欄：導覽選單
@@ -2147,7 +2159,7 @@ div[class*="st-key-del_vocab_"] button:hover {
             src = "／".join(source_labels.get(s, "重要") for s in m["sources"])
             ref = m.get("reference_title")
             src_txt = f'{src}　{ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
-            c_info, c_spk, c_del = st.columns([0.80, 0.10, 0.10])
+            c_info, c_spk, c_del = st.columns([0.80, 0.10, 0.10], vertical_alignment="center")
             with c_info:
                 st.markdown(
                     f'<div style="padding-top:3px;line-height:1.4;">'
@@ -2163,17 +2175,19 @@ div[class*="st-key-del_vocab_"] button:hover {
                 # 🎧 と － を同じ 46×44 の枠に固定して大きさを完全に揃える
                 _wjs = m["word"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
                 components.html(f"""
-<div style="display:flex;justify-content:center;align-items:center;height:46px;margin:0;">
+<style>html,body{{margin:0;padding:0;}}</style>
+<div style="display:flex;justify-content:center;align-items:center;height:44px;">
 <button onclick="(function(){{ if(!window.speechSynthesis) return;
   var u=new SpeechSynthesisUtterance('{_wjs}'); u.lang='en-US'; u.rate=0.85; u.volume=1;
   window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }})()"
-  style="width:46px;height:44px;background:#F5F5F5;color:#555;border:1px solid #E0E0E0;
-  border-radius:2px;font-size:18px;line-height:1;cursor:pointer;padding:0;
+  style="width:46px;height:44px;display:flex;align-items:center;justify-content:center;
+  background:#F5F5F5;color:#555;border:1px solid #E0E0E0;border-radius:2px;
+  font-size:18px;line-height:1;cursor:pointer;padding:0;
   -webkit-tap-highlight-color:transparent;"
   onmouseover="this.style.background='#ECECEC'"
   onmouseout="this.style.background='#F5F5F5'">🎧</button>
 </div>
-""", height=48)
+""", height=44)
             with c_del:
                 if st.button("－", key=f"del_vocab_{m['ids'][0]}",
                              help=t("today_del_help")):
