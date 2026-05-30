@@ -1831,8 +1831,9 @@ elif page == "today":  # noqa: E501
             )
             # ── 単語カード（中央寄せ・枠付き）。発音ボタンは下に speak_button で別途描画 ──
             st.markdown(
-                f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid #4A7C59;'
-                f'border-radius:2px 2px 0 0;border-bottom:none;padding:44px 24px 24px;text-align:center;margin:8px 0 0;">'
+                f'<div style="background:#FFF;border:1px solid #E8E8E8;'
+                f'border-radius:10px;padding:44px 24px 32px;text-align:center;margin:8px 0 14px;'
+                f'box-shadow:0 1px 4px rgba(0,0,0,.04);">'
                 f'<div style="font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:18px;">'
                 f'{source_label}</div>'
                 f'<div style="font-size:clamp(26px,7vw,40px);font-weight:300;letter-spacing:.08em;'
@@ -1843,15 +1844,10 @@ elif page == "today":  # noqa: E501
                 f'</div>',
                 unsafe_allow_html=True
             )
-            # 発音ボタン（実際に音が出る）— カード下端に配置
+            # 発音ボタン（実際に音が出る）— カードの下に独立配置
             bcol = st.columns([1, 1, 1])[1]
             with bcol:
                 speak_button(word["word"], label=t("today_listen"), height=46)
-            st.markdown(
-                '<div style="border:1px solid #E8E8E8;border-top:none;border-radius:0 0 2px 2px;'
-                'height:16px;margin:0 0 8px;background:#FFF;"></div>',
-                unsafe_allow_html=True
-            )
 
             if not st.session_state.show_answer:
                 if st.button(t("today_show"), use_container_width=True, type="primary"):
@@ -1894,40 +1890,80 @@ elif page == "today":  # noqa: E501
         search_q = st.text_input(t("today_search"), placeholder="e.g. resilient", key="vocab_search")
 
         filtered = [v for v in all_vocab if search_q.lower() in v["word"].lower()] if search_q else all_vocab
-        st.caption(f"{t('today_cnt1')}{len(filtered)}{t('today_cnt2')}")
 
-        # ── 単語リスト（各行ネイティブ：情報 ｜ 🔊発音 ｜ 🗑削除）──
-        #    iframe は sandbox で親フレームを操作できず削除ボタンが効かないため、
-        #    行ごとに Streamlit ネイティブで描画し、🗑 を 🔊 の隣に置く。
-        import html as _html
+        # ── 重複単語を1行に統合（大文字小文字を無視）。来源ラベルは併記し、
+        #    削除時はその単語の全 id をまとめて消す。──
+        merged = {}
         for v in filtered:
-            pos = v.get("part_of_speech", "")
+            key = v["word"].strip().lower()
+            if key not in merged:
+                merged[key] = {
+                    "word": v["word"], "part_of_speech": v.get("part_of_speech", ""),
+                    "definition": v.get("definition", ""), "example": v.get("example", ""),
+                    "ids": [v["id"]], "sources": [v.get("source", "")],
+                    "reference_title": v.get("reference_title"),
+                }
+            else:
+                m = merged[key]
+                m["ids"].append(v["id"])
+                if v.get("source", "") not in m["sources"]:
+                    m["sources"].append(v.get("source", ""))
+                m["part_of_speech"] = m["part_of_speech"] or v.get("part_of_speech", "")
+                m["definition"] = m["definition"] or v.get("definition", "")
+                m["example"] = m["example"] or v.get("example", "")
+                m["reference_title"] = m["reference_title"] or v.get("reference_title")
+        merged_list = list(merged.values())
+        st.caption(f"{t('today_cnt1')}{len(merged_list)}{t('today_cnt2')}")
+
+        # 🎧 発音・－ 削除ボタンを 🔊 と同じ淡いグレー枠に揃える CSS
+        st.markdown("""
+<style>
+div[class*="st-key-del_vocab_"] button {
+    background:#F5F5F5 !important; color:#C0504D !important;
+    border:1px solid #E0E0E0 !important; border-radius:2px !important;
+    box-shadow:none !important; min-height:44px !important;
+    font-size:22px !important; font-weight:400 !important;
+    line-height:1 !important; padding:0 !important;
+}
+div[class*="st-key-del_vocab_"] button:hover {
+    background:#F2E4E4 !important; border-color:#D9B8B8 !important; color:#A83A36 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+        # ── 単語リスト（各行ネイティブ：情報 ｜ 🎧発音 ｜ －削除）──
+        #    iframe は sandbox で親フレームを操作できず削除が効かないため
+        #    行ごとに Streamlit ネイティブで描画し、－ を 🎧 の隣に置く。
+        import html as _html
+        for m in merged_list:
+            pos = m.get("part_of_speech", "")
             pos_html = (f'<span style="font-size:11px;background:#EEE;color:#999;'
                         f'padding:1px 7px;border-radius:3px;margin-left:4px;">'
                         f'{_html.escape(pos)}</span>' if pos else "")
-            desc = v.get("example", "") if v.get("source") == "pronunciation" else v.get("definition", "")
-            src = source_labels.get(v.get("source", ""), "重要")
-            ref = v.get("reference_title")
+            desc = m.get("definition") or m.get("example") or ""
+            src = "／".join(source_labels.get(s, "重要") for s in m["sources"])
+            ref = m.get("reference_title")
             src_txt = f'{src}　{ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
             c_info, c_spk, c_del = st.columns([0.80, 0.10, 0.10])
             with c_info:
                 st.markdown(
                     f'<div style="padding-top:3px;line-height:1.4;">'
                     f'<span style="font-weight:600;color:#1A1A1A;font-size:14px;">'
-                    f'{_html.escape(v["word"])}</span>{pos_html}'
+                    f'{_html.escape(m["word"])}</span>{pos_html}'
                     f'<div style="font-size:12px;color:#888;margin-top:2px;line-height:1.5;">'
-                    f'{_html.escape(desc or "")}'
+                    f'{_html.escape(desc)}'
                     f'<span style="font-size:11px;color:#CCC;margin-left:8px;">'
                     f'{_html.escape(src_txt)}</span></div></div>',
                     unsafe_allow_html=True,
                 )
             with c_spk:
-                speak_button(v["word"])
+                speak_button(m["word"], label="🎧")
             with c_del:
-                if st.button("🗑", key=f"del_vocab_{v['id']}",
+                if st.button("－", key=f"del_vocab_{m['ids'][0]}",
                              help=t("today_del_help"), use_container_width=True):
-                    delete_vocabulary(int(v["id"]))
-                    st.toast(f'🗑 {v["word"]}', icon="🗑️")
+                    for _id in m["ids"]:
+                        delete_vocabulary(int(_id))
+                    st.toast(f'－ {m["word"]}', icon="🗑️")
                     st.rerun()
             st.markdown(
                 '<hr style="margin:0;border:none;border-top:1px solid #F0F0F0;">',
