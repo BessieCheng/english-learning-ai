@@ -54,7 +54,7 @@ def speak_button(word, label="🔊", height=44, font_size=13):
 # ══════════════════════════════════════════════════════════════
 st.set_page_config(
     page_title="英文対話分析 / 英文對話分析",
-    page_icon="🎙️",
+    page_icon="📘",
     layout="centered"
 )
 
@@ -75,10 +75,10 @@ st.session_state["lang"] = "ja" if _lang_choice == "日本語" else "zh"
 
 LANG = {
     # ── ナビ / 導覽 ──
-    "nav_history":   {"ja": "📚 履歴",          "zh": "📚 歷史記錄"},
-    "nav_today":     {"ja": "🗓️ 今日の単語",     "zh": "🗓️ 今日單字"},
-    "nav_news":      {"ja": "📰 ニュース",       "zh": "📰 新聞搜尋"},
-    "nav_upload":    {"ja": "🎙️ 分析",          "zh": "🎙️ 上傳分析"},
+    "nav_history":   {"ja": "履歴",          "zh": "歷史記錄"},
+    "nav_today":     {"ja": "今日の単語",     "zh": "今日單字"},
+    "nav_news":      {"ja": "ニュース",       "zh": "新聞搜尋"},
+    "nav_upload":    {"ja": "分析",          "zh": "上傳分析"},
 
     # ── サイドバー / 側邊欄 ──
     "side_subtitle": {"ja": "英文分析",          "zh": "英文分析"},
@@ -88,26 +88,26 @@ LANG = {
                         "zh": "將此頁面網址分享給朋友"},
 
     # ── タイトル / 標題 ──
-    "title_main":    {"ja": "🎙️ 英文対話分析・スマート単語帳",
-                      "zh": "🎙️ 英文對話分析與智慧單字本"},
+    "title_main":    {"ja": "英文対話分析・スマート単語帳",
+                      "zh": "英文對話分析與智慧單字本"},
     "title_sub":     {"ja": "AIで英会話を分析・単語を記憶",
                       "zh": "用 AI 分析英語對話、記憶單字"},
 
     # ── アップロード分析ページ / 上傳分析頁 ──
     "up_header":     {"ja": "音声をアップロードして分析",
                       "zh": "上傳音檔開始分析"},
-    "up_link_exp":   {"ja": "📄 練習記事を設定（任意）",
-                      "zh": "📄 連結練習文章（選填）"},
-    "up_linked":     {"ja": "📰 連携中：",        "zh": "📰 已連結："},
+    "up_link_exp":   {"ja": "練習記事を設定（任意）",
+                      "zh": "連結練習文章（選填）"},
+    "up_linked":     {"ja": "連携中：",        "zh": "已連結："},
     "up_view_body":  {"ja": "記事を確認",         "zh": "查看文章內容"},
     "up_unlink":     {"ja": "✖ 連携を解除",       "zh": "✖ 取消連結"},
     "up_link_hint":  {"ja": "記事を貼り付けるか .txt をアップロードすると、AIが原文と照合します",
                       "zh": "貼上文章或上傳 .txt 檔，AI 會對照原文分析"},
-    "up_tab_paste":  {"ja": "📋 貼り付け",        "zh": "📋 貼上文字"},
+    "up_tab_paste":  {"ja": "貼り付け",        "zh": "貼上文字"},
     "up_tab_file":   {"ja": "📁 .txt",           "zh": "📁 上傳 .txt"},
     "up_title_in":   {"ja": "タイトル（任意）",    "zh": "文章標題（選填）"},
     "up_body_in":    {"ja": "記事本文を貼り付け",  "zh": "貼上文章內容"},
-    "up_set_btn":    {"ja": "✅ 練習記事に設定",   "zh": "✅ 設定為練習文章"},
+    "up_set_btn":    {"ja": "練習記事に設定",   "zh": "設定為練習文章"},
     "up_no_body":    {"ja": "記事本文を入力してください",
                       "zh": "請貼上文章內容"},
     "up_file_in":    {"ja": ".txt ファイルをアップロード",
@@ -115,52 +115,52 @@ LANG = {
     "up_ext_default":{"ja": "外部記事",           "zh": "外部文章"},
     "up_audio_in":   {"ja": "音声ファイルを選択（mp3・wav・m4a）",
                       "zh": "選擇音檔（mp3、wav、m4a）"},
-    "up_done":       {"ja": "✅ アップロード完了：",
-                      "zh": "✅ 已上傳："},
-    "up_start":      {"ja": "🚀 分析開始",        "zh": "🚀 開始分析"},
+    "up_done":       {"ja": "アップロード完了：",
+                      "zh": "已上傳："},
+    "up_start":      {"ja": "分析開始",        "zh": "開始分析"},
     "up_sp_trans":   {"ja": "⏳ 文字起こし＋話者識別中（約30秒）...",
                       "zh": "⏳ 轉錄＋識別說話者中（約30秒）..."},
     "up_speakers":   {"ja": "位の話者、",          "zh": "位說話者，"},
     "up_segments":   {"ja": "セグメント",          "zh": "段"},
-    "up_diar_err":   {"ja": "⚠️ 分離エラー（バックアップモード）:",
-                      "zh": "⚠️ 分離錯誤（使用備用模式）:"},
-    "up_transcript": {"ja": "💬 話者別逐字稿",     "zh": "💬 說話者分離逐字稿"},
+    "up_diar_err":   {"ja": "分離エラー（バックアップモード）:",
+                      "zh": "分離錯誤（使用備用模式）:"},
+    "up_transcript": {"ja": "話者別逐字稿",     "zh": "說話者分離逐字稿"},
     "up_sp_analyze": {"ja": "⏳ 分析中...",        "zh": "⏳ 正在分析..."},
-    "up_complete":   {"ja": "🎉 分析完了！",       "zh": "🎉 分析完成！"},
+    "up_complete":   {"ja": "分析完了！",       "zh": "分析完成！"},
     "up_m_score":    {"ja": "総合評価",           "zh": "整體評分"},
     "up_m_vocab":    {"ja": "新規単語",           "zh": "新增單字"},
     "up_m_unit":     {"ja": "個",                "zh": "個"},
-    "up_h_grammar":  {"ja": "📝 文法アドバイス",   "zh": "📝 文法建議"},
+    "up_h_grammar":  {"ja": "文法アドバイス",   "zh": "文法建議"},
     "up_no_grammar": {"ja": "文法エラーは見つかりませんでした！",
                       "zh": "沒有發現明顯文法錯誤！"},
-    "up_h_vocab":    {"ja": "📚 学んだ単語",       "zh": "📚 學到的單字"},
+    "up_h_vocab":    {"ja": "学んだ単語",       "zh": "學到的單字"},
     "up_example":    {"ja": "例文：",             "zh": "例句："},
-    "up_h_pron":     {"ja": "🗣️ 発音のヒント",     "zh": "🗣️ 發音提示"},
-    "up_pdf_btn":    {"ja": "📄 レポートをPDFでダウンロード",
-                      "zh": "📄 下載 PDF 分析報告"},
+    "up_h_pron":     {"ja": "発音のヒント",     "zh": "發音提示"},
+    "up_pdf_btn":    {"ja": "レポートをPDFでダウンロード",
+                      "zh": "下載 PDF 分析報告"},
 
     # ── ニュースページ / 新聞頁 ──
     "news_added":    {"ja": "を単語本に追加",      "zh": "已加入單字本"},
-    "news_header":   {"ja": "📰 英語ニュース検索",  "zh": "📰 英文新聞搜尋"},
-    "news_level":    {"ja": "📊 英語レベル",       "zh": "📊 英文程度"},
-    "news_caption":  {"ja": "💡 どの言語でもOK、Geminiがリアルなニュースを検索します",
-                      "zh": "💡 任何語言輸入主題，Gemini 會幫你找真實新聞"},
+    "news_header":   {"ja": "英語ニュース検索",  "zh": "英文新聞搜尋"},
+    "news_level":    {"ja": "英語レベル",       "zh": "英文程度"},
+    "news_caption":  {"ja": "どの言語でもOK、Geminiがリアルなニュースを検索します",
+                      "zh": "任何語言輸入主題，Gemini 會幫你找真實新聞"},
     "news_chat_in":  {"ja": "ニュースのテーマを入力... (e.g. AI, climate, economy)",
                       "zh": "輸入你想看的新聞主題... (e.g. AI, climate, economy)"},
     "news_search_fail": {"ja": "検索失敗：",       "zh": "搜尋失敗："},
     "news_tip_line": {"ja": "🔊 単語をタップで発音 ｜ 長押しで単語本に追加",
                       "zh": "🔊 點擊單字可聽發音 ｜ 長按可加入單字本"},
-    "news_copy_exp": {"ja": "📋 記事をコピー",     "zh": "📋 複製文章給朋友"},
-    "news_save_btn": {"ja": "💾 記事を保存",       "zh": "💾 儲存此新聞"},
-    "news_saved_toast": {"ja": "✅ 記事を保存しました",
-                         "zh": "✅ 新聞已儲存"},
-    "news_practice_btn": {"ja": "🎙️ この記事で練習", "zh": "🎙️ 用這篇練習"},
-    "news_h_saved":  {"ja": "💾 保存した記事",     "zh": "💾 已儲存新聞"},
+    "news_copy_exp": {"ja": "記事をコピー",     "zh": "複製文章給朋友"},
+    "news_save_btn": {"ja": "記事を保存",       "zh": "儲存此新聞"},
+    "news_saved_toast": {"ja": "記事を保存しました",
+                         "zh": "新聞已儲存"},
+    "news_practice_btn": {"ja": "この記事で練習", "zh": "用這篇練習"},
+    "news_h_saved":  {"ja": "保存した記事",     "zh": "已儲存新聞"},
     "news_no_saved": {"ja": "まだ保存した記事はありません",
                       "zh": "還沒有儲存的新聞"},
     "news_source":   {"ja": "ソース：",           "zh": "來源："},
     "news_saved_at": {"ja": "保存日 ",            "zh": "儲存於 "},
-    "news_practice2":{"ja": "🎙️ この記事で練習",   "zh": "🎙️ 用這篇練習"},
+    "news_practice2":{"ja": "この記事で練習",   "zh": "用這篇練習"},
     "news_delete":   {"ja": "🗑️ 削除",            "zh": "🗑️ 刪除"},
 
     # ── 履歴ページ / 歷史頁 ──
@@ -170,29 +170,29 @@ LANG = {
     "hist_count1":   {"ja": "合計 ",              "zh": "共 "},
     "hist_count2":   {"ja": " 件",               "zh": " 筆記錄"},
     "hist_score":    {"ja": "評価：",             "zh": "評分："},
-    "hist_tab_t":    {"ja": "💬 逐字起こし",       "zh": "💬 逐字稿"},
-    "hist_tab_g":    {"ja": "📝 文法",            "zh": "📝 文法"},
-    "hist_tab_p":    {"ja": "🗣️ 発音",            "zh": "🗣️ 發音"},
-    "hist_tab_v":    {"ja": "📚 単語",            "zh": "📚 單字"},
+    "hist_tab_t":    {"ja": "逐字起こし",       "zh": "逐字稿"},
+    "hist_tab_g":    {"ja": "文法",            "zh": "文法"},
+    "hist_tab_p":    {"ja": "発音",            "zh": "發音"},
+    "hist_tab_v":    {"ja": "単語",            "zh": "單字"},
     "hist_no_grammar": {"ja": "文法エラーなし",    "zh": "沒有文法錯誤"},
     "hist_no_pron":  {"ja": "発音提示なし",        "zh": "無發音提示"},
     "hist_no_vocab": {"ja": "単語なし",           "zh": "無單字"},
     "hist_example":  {"ja": "例文：",             "zh": "例句："},
-    "hist_delete":   {"ja": "🗑️ 削除",            "zh": "🗑️ 刪除"},
+    "hist_delete":   {"ja": "🗑️ 削除",            "zh": "🗑️ 刪除"},  # 🗑 為功能圖示，保留
     "hist_del_toast":{"ja": "削除しました",        "zh": "已刪除"},
 
     # ── 今日の単語ページ / 今日單字頁 ──
     "today_header":  {"ja": "今日の単語復習",      "zh": "今日單字複習"},
-    "today_add_exp": {"ja": "➕ 単語を手動追加",   "zh": "➕ 手動新增單字"},
+    "today_add_exp": {"ja": "単語を手動追加",   "zh": "手動新增單字"},
     "today_word_in": {"ja": "英単語",            "zh": "英文單字"},
-    "today_add_btn": {"ja": "🔍 自動で調べて追加", "zh": "🔍 自動查詢並加入單字本"},
+    "today_add_btn": {"ja": "自動で調べて追加", "zh": "自動查詢並加入單字本"},
     "today_lookup":  {"ja": "Gemini で検索中：",   "zh": "Gemini 查詢中："},
     "today_ex":      {"ja": "例文：",             "zh": "例句："},
     "today_lookup_fail": {"ja": "検索失敗：",      "zh": "查詢失敗："},
     "today_no_word": {"ja": "単語を入力してください", "zh": "請輸入單字"},
-    "today_all_done":{"ja": "🎉 今日復習する単語はありません。お疲れさまでした！",
-                      "zh": "🎉 今天沒有需要複習的單字，很棒！"},
-    "today_done1":   {"ja": "🎉 今日の ",         "zh": "🎉 今天的 "},
+    "today_all_done":{"ja": "今日復習する単語はありません。お疲れさまでした！",
+                      "zh": "今天沒有需要複習的單字，很棒！"},
+    "today_done1":   {"ja": "今日の ",         "zh": "今天的 "},
     "today_done2":   {"ja": " 単語をすべて完了！",  "zh": " 個單字全部複習完畢！"},
     "today_restart": {"ja": "最初から",           "zh": "重新開始"},
     "today_m_today": {"ja": "今日",              "zh": "今日"},
@@ -203,21 +203,21 @@ LANG = {
     "today_review_n":{"ja": "復習 ",             "zh": "複習 "},
     "today_review_unit": {"ja": " 回",           "zh": " 回"},
     "today_ease":    {"ja": "難易度 ",            "zh": "難易度 "},
-    "today_show":    {"ja": "👁️ 答えを見る",       "zh": "👁️ 顯示答案"},
+    "today_show":    {"ja": "答えを見る",       "zh": "顯示答案"},
     "today_meaning": {"ja": "意味：",             "zh": "中文："},
     "today_ex_label":{"ja": "例文：",             "zh": "例句："},
     "today_how_much":{"ja": "どれだけ覚えていますか？", "zh": "你記得多少？"},
-    "today_src_vocab":{"ja": "📖 重要単語",        "zh": "📖 重點單字"},
-    "today_src_pron": {"ja": "🗣️ 発音ミス",        "zh": "🗣️ 發音錯誤"},
-    "today_src_hesit":{"ja": "💭 迷った単語",       "zh": "💭 猶豫單字"},
-    "today_src_manual":{"ja": "✏️ 手動追加",        "zh": "✏️ 手動新增"},
-    "today_h_list":  {"ja": "📋 単語リスト",       "zh": "📋 單字總表"},
+    "today_src_vocab":{"ja": "重要単語",        "zh": "重點單字"},
+    "today_src_pron": {"ja": "発音ミス",        "zh": "發音錯誤"},
+    "today_src_hesit":{"ja": "迷った単語",       "zh": "猶豫單字"},
+    "today_src_manual":{"ja": "手動追加",        "zh": "手動新增"},
+    "today_h_list":  {"ja": "単語リスト",       "zh": "單字總表"},
     "today_no_list": {"ja": "まだ単語がありません", "zh": "還沒有單字記錄"},
-    "today_lbl_vocab":{"ja": "📖 重要",            "zh": "📖 重點"},
-    "today_lbl_pron": {"ja": "🗣️ 発音",            "zh": "🗣️ 發音"},
-    "today_lbl_hesit":{"ja": "💭 迷い",            "zh": "💭 猶豫"},
-    "today_lbl_manual":{"ja": "✏️ 手動",           "zh": "✏️ 手動"},
-    "today_search":  {"ja": "🔍 単語を検索",       "zh": "🔍 搜尋單字"},
+    "today_lbl_vocab":{"ja": "重要",            "zh": "重點"},
+    "today_lbl_pron": {"ja": "発音",            "zh": "發音"},
+    "today_lbl_hesit":{"ja": "迷い",            "zh": "猶豫"},
+    "today_lbl_manual":{"ja": "手動",           "zh": "手動"},
+    "today_search":  {"ja": "単語を検索",       "zh": "搜尋單字"},
     "today_cnt1":    {"ja": "合計 ",             "zh": "共 "},
     "today_cnt2":    {"ja": " 単語",             "zh": " 個單字"},
     "today_del_help":{"ja": "この単語を削除",       "zh": "刪除此單字"},
@@ -555,13 +555,25 @@ h3::before {
     gap: 0 !important;
 }
 [data-testid="stSidebar"] .stRadio label {
-    padding: 11px 4px !important;
+    padding: 11px 10px !important;
     margin: 0 !important;
-    transition: color .15s, padding-left .15s !important;
+    border-left: 2px solid transparent !important;
+    transition: color .15s, background .15s, border-color .15s !important;
 }
 [data-testid="stSidebar"] .stRadio label:hover {
     color: #4A7C59 !important;
-    padding-left: 8px !important;
+    background: #EEF3F0 !important;
+}
+/* D 版：選中項に緑の左ライン＋淡い緑背景 */
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    color: #4A7C59 !important;
+    font-weight: 500 !important;
+    background: #EEF3F0 !important;
+    border-left: 2px solid #4A7C59 !important;
+}
+/* radio の丸ポチを隠して純テキストメニューに */
+[data-testid="stSidebar"] .stRadio label > div:first-child {
+    display: none !important;
 }
 /* expander をカード風に強化 */
 [data-testid="stExpander"] {
@@ -621,7 +633,7 @@ h3::before {
 with st.sidebar:
     st.markdown(
         '<div style="padding:4px 0 8px;">'
-        f'<div style="font-size:15px;font-weight:500;color:#1A1A1A;letter-spacing:.05em;">🎙 {t("side_subtitle")}</div>'
+        f'<div style="font-size:15px;font-weight:500;color:#1A1A1A;letter-spacing:.05em;">{t("side_subtitle")}</div>'
         '<div style="font-size:10px;color:#BBB;letter-spacing:.22em;margin-top:2px;">ENGLISH LEARNING AI</div>'
         '</div>'
         f'<div style="font-size:10px;letter-spacing:.28em;color:#BBB;margin:18px 0 8px;">{t("side_menu")}</div>',
@@ -715,7 +727,7 @@ if page == "upload":
                     try:
                         diarized = diarize(tmp_path)
                         transcript = diarized.get("transcript", "")
-                        st.info(f"🔍 {diarized.get('speaker_count')} {t('up_speakers')}{len(diarized.get('segments', []))} {t('up_segments')}")
+                        st.info(f"{diarized.get('speaker_count')} {t('up_speakers')}{len(diarized.get('segments', []))} {t('up_segments')}")
                     except Exception as diarize_err:
                         st.warning(f"{t('up_diar_err')}\n\n`{diarize_err}`")
                         from transcribe_func import transcribe
@@ -767,7 +779,7 @@ if page == "upload":
                 with col2:
                     st.metric(t("up_m_vocab"), f"{len(analysis.get('vocabulary_highlights', []))} {t('up_m_unit')}")
 
-                st.info(f"💬 {analysis.get('summary')}")
+                st.info(f"{analysis.get('summary')}")
 
                 # ── 文法エラー（話者ラベル付き）────────────────
                 errors = analysis.get("grammar_errors", [])
@@ -841,7 +853,7 @@ elif page == "news":
         _pos = st.query_params.get("save_pos", "")
         if _w:
             add_vocabulary_manually(_w, _d, "", _pos)
-            st.toast(f"📚 「{_w}」{t('news_added')}", icon="✅")
+            st.toast(f"「{_w}」{t('news_added')}", icon="✅")
         st.query_params.clear()
 
     st.header(t("news_header"))
@@ -881,7 +893,7 @@ elif page == "news":
 
         # 用 Gemini + Google Search 找真實新聞（只取 1 篇）
         with st.chat_message("assistant"):
-            with st.spinner("🔍 Searching real news with Gemini..."):
+            with st.spinner("Searching real news with Gemini..."):
                 try:
                     articles = fetch_news_with_gemini(prompt, level_key, count=1)
                 except Exception as e:
@@ -1112,7 +1124,7 @@ function onRightClick(e, el) {{
   const menu = document.createElement('div');
   menu.id = 'ctx-menu';
   menu.innerHTML = `
-    <div class="ctx-word">📖 ${{el.innerText}}</div>
+    <div class="ctx-word">${{el.innerText}}</div>
     <select id="ctx-pos">
       <option value="">品詞 / 詞性（選填）</option>
       <option value="noun">noun 名詞</option>
@@ -1123,8 +1135,8 @@ function onRightClick(e, el) {{
       <option value="idiom">idiom 慣用語</option>
     </select>
     <input id="ctx-def" placeholder="定義 / Definition" value="${{defVal}}">
-    <button onclick="saveToVocab('${{word}}')">📚 加入單字本 / Add to Vocab</button>
-    <div id="ctx-saved">✅ 已加入！</div>
+    <button onclick="saveToVocab('${{word}}')">加入單字本 / Add to Vocab</button>
+    <div id="ctx-saved">已加入！</div>
   `;
 
   const menuW = Math.min(260, window.innerWidth * 0.85);
@@ -1173,7 +1185,7 @@ function saveToVocab(word) {{
 
                 # ── 重點單字
                 if vocab:
-                    vocab_md = "\n**📖 Key Vocabulary:**\n"
+                    vocab_md = "\n**Key Vocabulary:**\n"
                     for v in vocab:
                         vocab_md += f"- **{v.get('word')}** — {v.get('definition')}\n  > *{v.get('example')}*\n"
                     st.markdown(vocab_md)
@@ -1193,7 +1205,7 @@ function saveToVocab(word) {{
 
                 # 存入歷史記錄（純文字版本）
                 saved = f"{header_md}\n\n{body}\n\n" + (
-                    "**📖 Key Vocabulary:**\n" +
+                    "**Key Vocabulary:**\n" +
                     "\n".join(f"- **{v.get('word')}** — {v.get('definition')}" for v in vocab)
                     if vocab else ""
                 )
@@ -1207,13 +1219,13 @@ function saveToVocab(word) {{
         st.info(t("news_no_saved"))
     else:
         for n in saved_list:
-            with st.expander(f"📰 {n['title']}  ·  {n.get('date_str','')}"):
+            with st.expander(f"{n['title']}  ·  {n.get('date_str','')}"):
                 st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{n.get('saved_at','')[:16]}")
                 st.write(n.get("body", ""))
                 import json as _j
                 vocab_saved = _j.loads(n.get("vocab_json") or "[]")
                 if vocab_saved:
-                    st.markdown("**📖 Key Vocabulary:**")
+                    st.markdown("**Key Vocabulary:**")
                     for v in vocab_saved:
                         st.markdown(f"- **{v.get('word')}** — {v.get('definition')}")
                 btn_c1, btn_c2 = st.columns(2)
@@ -1242,8 +1254,8 @@ elif page == "history":
         st.write(f"{t('hist_count1')}**{len(sessions)}**{t('hist_count2')}")
 
         for s in sessions:
-            with st.expander(f"📅 {s['created_at']}　｜　{s['audio_file']}　｜　{t('hist_score')}{s['score']} / 10"):
-                st.info(f"💬 {s['summary']}")
+            with st.expander(f"{s['created_at']}　｜　{s['audio_file']}　｜　{t('hist_score')}{s['score']} / 10"):
+                st.info(f"{s['summary']}")
 
                 analysis_h = json.loads(s['analysis_json']) if s.get('analysis_json') else {}
                 diarized_h = json.loads(s['diarized_json']) if s.get('diarized_json') else None
@@ -1367,7 +1379,7 @@ elif page == "today":  # noqa: E501
                             info.get("part_of_speech", "")
                         )
                         st.success(
-                            f"✅ **{new_word.strip()}**"
+                            f"**{new_word.strip()}**"
                             f"  `{info.get('part_of_speech','')}`  "
                             f"{definition}"
                         )
@@ -1506,9 +1518,9 @@ elif page == "today":  # noqa: E501
             pos_html = (f'<code class="pos">{_html.escape(pos)}</code>' if pos else "")
             desc = v.get("example", "") if v.get("source") == "pronunciation" else v.get("definition", "")
             desc = _html.escape(desc or "")
-            src = source_labels.get(v.get("source", ""), "📖")
+            src = source_labels.get(v.get("source", ""), "重要")
             ref = v.get("reference_title")
-            src_html = f'{_html.escape(src)}　📰 {_html.escape(ref[:16])}{"…" if ref and len(ref) > 16 else ""}' if ref else _html.escape(src)
+            src_html = f'{_html.escape(src)}　{_html.escape(ref[:16])}{"…" if ref and len(ref) > 16 else ""}' if ref else _html.escape(src)
             rows_html += (
                 f'<div class="row">'
                 f'<div class="info">'
