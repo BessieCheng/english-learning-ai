@@ -1540,6 +1540,35 @@ function stopit(){{ if(window.speechSynthesis) window.speechSynthesis.cancel(); 
         for n in saved_list:
             with st.expander(f"{n['title']}  ·  {n.get('date_str','')}"):
                 st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{n.get('saved_at','')[:16]}")
+                # 🔊 音声導読（speechSynthesis で全文を朗読）
+                import json as _json_tts2
+                _tts_saved = _json_tts2.dumps(n.get("body", ""))
+                _btn_style2 = ("font-family:'Noto Sans JP',sans-serif;background:#F5F5F5;"
+                               "color:#444;border:1px solid #DDD;border-radius:4px;"
+                               "padding:7px 14px;font-size:13px;cursor:pointer;"
+                               "-webkit-tap-highlight-color:transparent;")
+                components.html(f"""
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+  <button onclick="play()" style="{_btn_style2}">{t('news_read_aloud')}</button>
+  <button onclick="toggle()" style="{_btn_style2}">{t('news_read_pause')}</button>
+  <button onclick="stopit()" style="{_btn_style2}">{t('news_read_stop')}</button>
+</div>
+<script>
+var TXT = {_tts_saved};
+function play(){{
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(TXT);
+  u.lang='en-US'; u.rate=0.9; u.volume=1;
+  window.speechSynthesis.speak(u);
+}}
+function toggle(){{
+  var s = window.speechSynthesis; if(!s) return;
+  if(s.paused) s.resume(); else if(s.speaking) s.pause();
+}}
+function stopit(){{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }}
+</script>
+""", height=48)
                 st.write(n.get("body", ""))
                 import json as _j
                 vocab_saved = _j.loads(n.get("vocab_json") or "[]")
