@@ -22,7 +22,11 @@ MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
 
 def _call_gemini_json(prompt):
     """呼叫 Gemini，回傳解析後的 JSON（dict）。多模型 + 重試。"""
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY 未設定（Streamlit Cloud 請到 Settings → Secrets 設定）。")
+    client = genai.Client(api_key=api_key)
+    last_err = None
     for model_name in MODELS:
         for attempt in range(3):
             try:
@@ -37,14 +41,15 @@ def _call_gemini_json(prompt):
                     raw = raw[start:end]
                 return json.loads(raw)
             except Exception as e:
+                last_err = e
                 err = str(e)
                 if "404" in err or "NOT_FOUND" in err:
-                    break
+                    break  # 此模型不可用，換下一個
                 elif any(c in err for c in ["503", "UNAVAILABLE", "429"]):
                     time.sleep(3 * (attempt + 1))
                 else:
-                    raise
-    raise RuntimeError("Gemini 查詢失敗，請稍後再試。")
+                    break  # 其他錯誤（如金鑰無效），換下一個模型試
+    raise RuntimeError(f"Gemini 查詢失敗：{last_err}")
 
 
 def generate_quiz(toeic_level_key):

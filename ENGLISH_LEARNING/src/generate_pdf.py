@@ -20,7 +20,8 @@ def _find_cjk_font():
             return path
     raise FileNotFoundError("CJK 字型找不到，請確認已安裝 fonts-noto-cjk")
 
-FONT_PATH = _find_cjk_font()
+# 注意：字型查找延遲到「真正生成 PDF」時才執行（generate_report_pdf 內）。
+# 否則字型未安裝時，import generate_pdf 就會失敗，連帶整個 app 掛掉。
 
 # multi_cell を呼ぶ際に必ず cursor を左端に戻す共通オプション
 MC = {"new_x": XPos.LMARGIN, "new_y": YPos.NEXT}
@@ -74,7 +75,7 @@ def generate_report_pdf(audio_filename, transcript, analysis, diarized=None):
     回傳：bytes（PDF 二進位內容）
     """
     pdf = AnalysisReport(orientation="P", unit="mm", format="A4")
-    pdf.add_font("CJK", "", FONT_PATH)
+    pdf.add_font("CJK", "", _find_cjk_font())
     pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
 
