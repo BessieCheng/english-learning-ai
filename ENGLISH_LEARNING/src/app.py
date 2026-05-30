@@ -2146,7 +2146,18 @@ div[class*="st-key-del_vocab_"] button:hover {
                     unsafe_allow_html=True,
                 )
             with c_spk:
-                speak_button(m["word"], label="🎧")
+                # 🎧 を － と同じ「幅いっぱい・同じ高さ」の枠にして大きさを揃える
+                _wjs = m["word"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
+                components.html(f"""
+<button onclick="(function(){{ if(!window.speechSynthesis) return;
+  var u=new SpeechSynthesisUtterance('{_wjs}'); u.lang='en-US'; u.rate=0.85; u.volume=1;
+  window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }})()"
+  style="width:100%;height:44px;background:#F5F5F5;color:#555;border:1px solid #E0E0E0;
+  border-radius:2px;font-size:18px;line-height:1;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;"
+  onmouseover="this.style.background='#ECECEC'"
+  onmouseout="this.style.background='#F5F5F5'">🎧</button>
+""", height=46)
             with c_del:
                 if st.button("－", key=f"del_vocab_{m['ids'][0]}",
                              help=t("today_del_help"), use_container_width=True):
