@@ -925,7 +925,7 @@ elif page == "news":
   .news-body {{
     font-size: clamp(14px, 4vw, 16px);
     line-height: 2.0;
-    color: #e8e8e8;
+    color: #333;
     font-family: Georgia, serif;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -939,13 +939,13 @@ elif page == "news":
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }}
-  .w:hover, .w.active {{ background: #2a5ea8; color: #fff; }}
+  .w:hover, .w.active {{ background: #4A7C59; color: #fff; }}
   #tooltip {{
     position: fixed;
-    background: #1e2a3a;
-    color: #f0f0f0;
-    border: 1px solid #3a6ea8;
-    border-radius: 8px;
+    background: #FFF;
+    color: #333;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
     padding: 7px 12px;
     font-size: clamp(12px, 3.5vw, 14px);
     line-height: 1.6;
@@ -953,37 +953,37 @@ elif page == "news":
     display: none;
     z-index: 9999;
     max-width: min(220px, 80vw);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   }}
-  #tooltip .en {{ font-weight: bold; color: #7eb8f7; font-size: clamp(13px, 4vw, 15px); }}
-  #tooltip .jp {{ color: #f9ca74; }}
-  #tooltip .zh {{ color: #a8e6a3; }}
-  .tip {{ font-size: clamp(11px, 3vw, 12px); color: #888; margin-bottom: 6px; }}
+  #tooltip .en {{ font-weight: bold; color: #4A7C59; font-size: clamp(13px, 4vw, 15px); }}
+  #tooltip .jp {{ color: #B07A2A; }}
+  #tooltip .zh {{ color: #3D7A4B; }}
+  .tip {{ font-size: clamp(11px, 3vw, 12px); color: #AAA; margin-bottom: 6px; }}
   #ctx-menu {{
     position: fixed;
-    background: #1e2a3a;
-    border: 1px solid #3a6ea8;
-    border-radius: 10px;
+    background: #FFF;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
     padding: 12px;
     z-index: 99999;
     width: min(260px, 85vw);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   }}
-  #ctx-menu .ctx-word {{ color:#7eb8f7; font-weight:bold; font-size:clamp(14px,4vw,16px); margin-bottom:8px; }}
+  #ctx-menu .ctx-word {{ color:#4A7C59; font-weight:bold; font-size:clamp(14px,4vw,16px); margin-bottom:8px; }}
   #ctx-menu select, #ctx-menu input {{
-    width: 100%; background: #0e1621; color: #fff;
-    border: 1px solid #3a6ea8; border-radius: 4px;
+    width: 100%; background: #FFF; color: #333;
+    border: 1px solid #DDD; border-radius: 2px;
     padding: 8px 7px; font-size: clamp(12px,3.5vw,13px);
     box-sizing: border-box; margin-bottom: 6px;
   }}
   #ctx-menu button {{
-    width: 100%; background: #29629e; color: #fff;
-    border: none; border-radius: 5px;
+    width: 100%; background: #4A7C59; color: #fff;
+    border: none; border-radius: 2px;
     padding: 10px; cursor: pointer; font-size: clamp(13px,3.5vw,14px);
   }}
-  #ctx-menu button:hover, #ctx-menu button:active {{ background: #3a7abf; }}
+  #ctx-menu button:hover, #ctx-menu button:active {{ background: #3D6A4B; }}
   #ctx-saved {{
-    color: #4caf82; font-size: 13px; text-align: center;
+    color: #4A7C59; font-size: 13px; text-align: center;
     margin-top: 6px; display: none;
   }}
 </style>
@@ -1335,6 +1335,15 @@ elif page == "today":  # noqa: E501
     from srs import update_vocabulary_after_review, QUALITY_MAP
     from database import add_vocabulary_manually
 
+    # 単語リストの iframe 内 🗑 ボタンからの削除（query param 経由）
+    if st.query_params.get("del_vocab"):
+        try:
+            delete_vocabulary(int(st.query_params.get("del_vocab")))
+        except (ValueError, TypeError):
+            pass
+        st.query_params.clear()
+        st.rerun()
+
     st.header(t("today_header"))
 
     # ── 手動新增單字（輸入單字，Gemini 自動補齊）────────────────
@@ -1414,15 +1423,21 @@ elif page == "today":  # noqa: E501
                 "manual":        t("today_src_manual"),
             }.get(source, t("today_src_vocab"))
             pos = word.get("part_of_speech", "")
-            pos_badge_html = f'<code style="font-size:14px;background:#F5F5F5;color:#888;padding:2px 8px;margin-left:8px;vertical-align:middle;">{pos}</code>' if pos else ""
+            # 詞性は単語の下に独立した行で表示（折り返し・分断を防ぐ）
+            pos_badge_html = (
+                f'<div style="margin-top:12px;"><code style="font-size:13px;background:#F5F5F5;'
+                f'color:#888;padding:2px 10px;white-space:nowrap;">{pos}</code></div>'
+                if pos else ""
+            )
             # ── 単語カード（中央寄せ・枠付き）。発音ボタンは下に speak_button で別途描画 ──
             st.markdown(
                 f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid #4A7C59;'
-                f'border-radius:2px 2px 0 0;border-bottom:none;padding:48px 32px 24px;text-align:center;margin:8px 0 0;">'
-                f'<div style="font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:20px;">'
+                f'border-radius:2px 2px 0 0;border-bottom:none;padding:44px 24px 24px;text-align:center;margin:8px 0 0;">'
+                f'<div style="font-size:10px;letter-spacing:.3em;color:#CCC;margin-bottom:18px;">'
                 f'{source_label}</div>'
-                f'<div style="font-size:40px;font-weight:300;letter-spacing:.12em;color:#1A1A1A;">'
-                f'{word["word"]}{pos_badge_html}</div>'
+                f'<div style="font-size:clamp(26px,7vw,40px);font-weight:300;letter-spacing:.08em;'
+                f'color:#1A1A1A;word-break:keep-all;line-height:1.2;">{word["word"]}</div>'
+                f'{pos_badge_html}'
                 f'<div style="font-size:11px;color:#CCC;letter-spacing:.1em;margin-top:14px;">'
                 f'{t("today_review_n")}{word["review_count"]}{t("today_review_unit")}　·　{t("today_ease")}{word["ease_factor"]}</div>'
                 f'</div>',
@@ -1481,32 +1496,63 @@ elif page == "today":  # noqa: E501
         filtered = [v for v in all_vocab if search_q.lower() in v["word"].lower()] if search_q else all_vocab
         st.caption(f"{t('today_cnt1')}{len(filtered)}{t('today_cnt2')}")
 
+        # ── 単語リストを単一 iframe で描画（columns の手機崩れを回避）──
+        import html as _html
+        rows_html = ""
         for v in filtered:
-            # 手機友善：3 欄（単語＋定義 / 🔊 / 🗑️）。詞性は折り返さない。
-            col_main, col_tts, col_del = st.columns([5, 1, 1])
-            with col_main:
-                pos_html = (
-                    f'<code style="font-size:0.68em;background:#F5F5F5;color:#888;'
-                    f'padding:1px 6px;margin-left:6px;white-space:nowrap;">{v["part_of_speech"]}</code>'
-                    if v.get("part_of_speech") else ""
-                )
-                # 定義（發音錯誤類用例句）
-                desc = v.get("example", "") if v.get("source") == "pronunciation" else v.get("definition", "")
-                # 來源標籤
-                src = source_labels.get(v.get("source", ""), "📖")
-                ref = v.get("reference_title")
-                src_html = f'{src}　📰 {ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
-                st.markdown(
-                    f'<div style="padding-top:4px;line-height:1.5;">'
-                    f'<span style="font-weight:500;color:#1A1A1A;white-space:nowrap;">{v["word"]}</span>{pos_html}<br>'
-                    f'<span style="font-size:12px;color:#888;">{desc}</span>'
-                    f'<span style="font-size:11px;color:#CCC;margin-left:8px;white-space:nowrap;">{src_html}</span>'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-            with col_tts:
-                speak_button(v["word"], label="🔊", height=40, font_size=14)
-            with col_del:
-                if st.button("🗑️", key=f"del_vocab_{v['id']}", help=t("today_del_help")):
-                    delete_vocabulary(v["id"])
-                    st.rerun()
+            word_esc = _html.escape(v["word"])
+            word_js = v["word"].replace("\\", "\\\\").replace("'", "\\'")
+            pos = v.get("part_of_speech", "")
+            pos_html = (f'<code class="pos">{_html.escape(pos)}</code>' if pos else "")
+            desc = v.get("example", "") if v.get("source") == "pronunciation" else v.get("definition", "")
+            desc = _html.escape(desc or "")
+            src = source_labels.get(v.get("source", ""), "📖")
+            ref = v.get("reference_title")
+            src_html = f'{_html.escape(src)}　📰 {_html.escape(ref[:16])}{"…" if ref and len(ref) > 16 else ""}' if ref else _html.escape(src)
+            rows_html += (
+                f'<div class="row">'
+                f'<div class="info">'
+                f'<div class="line1"><span class="w">{word_esc}</span>{pos_html}</div>'
+                f'<div class="d">{desc}<span class="s">{src_html}</span></div>'
+                f'</div>'
+                f'<div class="acts">'
+                f'<button class="b spk" onclick="spk(\'{word_js}\')" title="發音">🔊</button>'
+                f'<button class="b del" onclick="del({v["id"]})" title="削除">🗑</button>'
+                f'</div>'
+                f'</div>'
+            )
+        list_html = f"""
+<style>
+  *{{box-sizing:border-box;}}
+  body{{margin:0;padding:0;background:transparent;font-family:'Noto Sans JP',sans-serif;}}
+  .row{{display:flex;align-items:center;gap:8px;padding:10px 4px;
+        border-bottom:1px solid #F0F0F0;}}
+  .info{{flex:1;min-width:0;}}
+  .line1{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}}
+  .w{{font-weight:500;color:#1A1A1A;font-size:14px;}}
+  .pos{{font-size:11px;background:#F5F5F5;color:#888;padding:1px 7px;border-radius:2px;white-space:nowrap;}}
+  .d{{font-size:12px;color:#888;margin-top:2px;line-height:1.5;}}
+  .s{{font-size:11px;color:#CCC;margin-left:8px;}}
+  .acts{{display:flex;gap:6px;flex-shrink:0;}}
+  .b{{border:1px solid #E0E0E0;background:#F8F8F8;border-radius:2px;
+      cursor:pointer;padding:5px 9px;font-size:14px;line-height:1;
+      -webkit-tap-highlight-color:transparent;}}
+  .b:hover{{background:#ECECEC;}}
+  .del{{color:#B05050;font-size:12px;padding:5px 7px;}}
+</style>
+<div class="list">{rows_html}</div>
+<script>
+function spk(w){{
+  if(!window.speechSynthesis) return;
+  var u=new SpeechSynthesisUtterance(w);
+  u.lang='en-US';u.rate=0.85;u.volume=1;
+  window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
+}}
+function del(id){{
+  var url=new URL(window.parent.location.href);
+  url.searchParams.set('del_vocab',id);
+  window.parent.location.href=url.toString();
+}}
+</script>
+"""
+        components.html(list_html, height=min(len(filtered) * 62 + 10, 1400), scrolling=True)
