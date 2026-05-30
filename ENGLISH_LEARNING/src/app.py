@@ -251,6 +251,9 @@ LANG = {
     "today_cnt1":    {"ja": "合計 ",             "zh": "共 "},
     "today_cnt2":    {"ja": " 単語",             "zh": " 個單字"},
     "today_del_help":{"ja": "この単語を削除",       "zh": "刪除此單字"},
+    "today_del_exp": {"ja": "🗑 単語を削除",         "zh": "🗑 刪除單字"},
+    "today_del_pick":{"ja": "削除する単語を選択",     "zh": "選擇要刪除的單字"},
+    "today_del_btn": {"ja": "削除",                 "zh": "刪除"},
 }
 
 
@@ -695,7 +698,7 @@ PASTEL_CSS = """
 
 /* ── 全体背景・フォント（淡い紫がかった白）── */
 html, body, [data-testid="stAppViewContainer"] {
-    background-color: #F7F6FB !important;
+    background-color: #FDF7FA !important;
     color: #3A3A4A !important;
 }
 [data-testid="stHeader"] { background: transparent !important; background-color: rgba(0,0,0,0) !important; }
@@ -711,7 +714,7 @@ html, body, [data-testid="stAppViewContainer"] {
     padding: 2rem 2rem 4rem;
     overflow-x: hidden;
     box-sizing: border-box;
-    background: #F7F6FB;
+    background: #FDF7FA;
 }
 
 /* ── 見出し（丸く太く親しみやすい）── */
@@ -728,14 +731,14 @@ h3::before {
     content: '' !important; position: absolute !important; left: 0 !important;
     top: 50% !important; transform: translateY(-50%) !important;
     width: 9px !important; height: 9px !important;
-    background: #B7A9F0 !important; border-radius: 50% !important;
+    background: #F4A9C4 !important; border-radius: 50% !important;
 }
 
 /* ── サイドバー（白＋淡い影）── */
 [data-testid="stSidebar"] {
     background-color: #FFFFFF !important;
     border-right: none !important;
-    box-shadow: 2px 0 12px rgba(120,110,180,.05) !important;
+    box-shadow: 2px 0 12px rgba(214,120,160,.05) !important;
 }
 [data-testid="stSidebar"] * { font-family: 'Nunito','Noto Sans JP', sans-serif !important; }
 [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
@@ -747,20 +750,20 @@ h3::before {
     font-size: 14px !important; color: #6A6A7E !important;
     padding: 11px 16px !important; margin: 0 !important;
     border: none !important; border-radius: 16px !important;
-    background: #F4F2FC !important;
+    background: #FCF2F6 !important;
     transition: background .15s, color .15s !important;
 }
-[data-testid="stSidebar"] .stRadio label:hover { background: #ECE8FA !important; color: #6B5DD3 !important; }
+[data-testid="stSidebar"] .stRadio label:hover { background: #FAE8F0 !important; color: #E27BA0 !important; }
 [data-testid="stSidebar"] .stRadio label:has(input:checked) {
-    background: #6B5DD3 !important; color: #FFFFFF !important; font-weight: 700 !important;
+    background: #E27BA0 !important; color: #FFFFFF !important; font-weight: 700 !important;
 }
 [data-testid="stSidebar"] .stRadio label > div:first-child { display: none !important; }
 
 /* ── ボタン（角丸・淡い紫）── */
 .stButton > button {
     background-color: #FFFFFF !important;
-    color: #6B5DD3 !important;
-    border: 1.5px solid #E3DEF7 !important;
+    color: #E27BA0 !important;
+    border: 1.5px solid #F7DEE9 !important;
     border-radius: 18px !important;
     font-family: 'Nunito','Noto Sans JP', sans-serif !important;
     font-weight: 700 !important;
@@ -770,22 +773,22 @@ h3::before {
     transition: all .18s !important;
     white-space: normal !important; word-break: break-word !important;
     line-height: 1.4 !important; min-height: 42px !important;
-    box-shadow: 0 2px 6px rgba(120,110,180,.06) !important;
+    box-shadow: 0 2px 6px rgba(214,120,160,.06) !important;
 }
 .stButton > button:hover {
-    border-color: #B7A9F0 !important; color: #5A4DC0 !important;
+    border-color: #F4A9C4 !important; color: #C25A82 !important;
     background-color: #F7F5FE !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(120,110,180,.12) !important;
+    box-shadow: 0 4px 12px rgba(214,120,160,.12) !important;
 }
 .stButton > button[kind="primary"],
 [data-testid="baseButton-primary"] {
-    background: linear-gradient(135deg,#7D6CE0,#6B5DD3) !important;
+    background: linear-gradient(135deg,#F093B4,#E27BA0) !important;
     color: #FFF !important; border: none !important;
-    box-shadow: 0 4px 14px rgba(107,93,211,.30) !important;
+    box-shadow: 0 4px 14px rgba(226,123,160,.30) !important;
 }
 [data-testid="baseButton-primary"]:hover {
-    background: linear-gradient(135deg,#6B5DD3,#5A4DC0) !important; color: #FFF !important;
+    background: linear-gradient(135deg,#E27BA0,#C25A82) !important; color: #FFF !important;
 }
 
 /* ── 入力・セレクト（角丸）── */
@@ -793,13 +796,13 @@ input, textarea, select,
 [data-testid="stTextInput"] input,
 [data-testid="stTextArea"] textarea {
     background: #FFFFFF !important;
-    border: 1.5px solid #E3DEF7 !important;
+    border: 1.5px solid #F7DEE9 !important;
     border-radius: 14px !important;
     color: #3A3A4A !important;
     font-family: 'Nunito','Noto Sans JP', sans-serif !important;
     font-size: 14px !important;
 }
-input:focus, textarea:focus { border-color: #B7A9F0 !important; box-shadow: 0 0 0 3px rgba(183,169,240,.18) !important; }
+input:focus, textarea:focus { border-color: #F4A9C4 !important; box-shadow: 0 0 0 3px rgba(244,169,196,.18) !important; }
 
 /* ── メトリクス（パステルカード）── */
 [data-testid="metric-container"], [data-testid="stMetric"] {
@@ -807,9 +810,9 @@ input:focus, textarea:focus { border-color: #B7A9F0 !important; box-shadow: 0 0 
     border: none !important;
     border-radius: 20px !important;
     padding: 20px 22px !important;
-    box-shadow: 0 3px 14px rgba(120,110,180,.07) !important;
+    box-shadow: 0 3px 14px rgba(214,120,160,.07) !important;
 }
-[data-testid="stMetricValue"] { font-size: 2rem !important; font-weight: 800 !important; color: #6B5DD3 !important; }
+[data-testid="stMetricValue"] { font-size: 2rem !important; font-weight: 800 !important; color: #E27BA0 !important; }
 [data-testid="stMetricLabel"] {
     font-size: 11px !important; color: #A6A6BC !important;
     letter-spacing: .06em !important; text-transform: uppercase !important; font-weight: 700 !important;
@@ -820,17 +823,17 @@ input:focus, textarea:focus { border-color: #B7A9F0 !important; box-shadow: 0 0 
     border: none !important;
     border-radius: 20px !important;
     background: #FFFFFF !important;
-    box-shadow: 0 3px 14px rgba(120,110,180,.06) !important;
+    box-shadow: 0 3px 14px rgba(214,120,160,.06) !important;
     margin-bottom: 12px !important;
     transition: box-shadow .18s, transform .18s !important;
     overflow: hidden !important;
 }
-[data-testid="stExpander"]:hover { box-shadow: 0 6px 20px rgba(120,110,180,.12) !important; transform: translateY(-1px) !important; }
+[data-testid="stExpander"]:hover { box-shadow: 0 6px 20px rgba(214,120,160,.12) !important; transform: translateY(-1px) !important; }
 [data-testid="stExpander"] summary {
     background: #FFFFFF !important; font-size: 14px !important;
     color: #5A5A6E !important; font-weight: 700 !important; padding: 4px 4px !important;
 }
-[data-testid="stExpander"] summary:hover { color: #6B5DD3 !important; }
+[data-testid="stExpander"] summary:hover { color: #E27BA0 !important; }
 
 /* ── タブ（ピル風）── */
 [data-testid="stTabs"] [role="tablist"] { border-bottom: none !important; gap: 8px !important; }
@@ -838,10 +841,10 @@ input:focus, textarea:focus { border-color: #B7A9F0 !important; box-shadow: 0 0 
     font-size: 13px !important; color: #9A9AB0 !important;
     letter-spacing: .01em !important; font-weight: 700 !important;
     padding: 8px 18px !important; border-bottom: none !important;
-    background: #F0EDFA !important; border-radius: 14px !important;
+    background: #FBEDF3 !important; border-radius: 14px !important;
 }
 [data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
-    color: #FFFFFF !important; background: #6B5DD3 !important;
+    color: #FFFFFF !important; background: #E27BA0 !important;
 }
 
 /* ── alert（パステル）── */
@@ -851,36 +854,36 @@ input:focus, textarea:focus { border-color: #B7A9F0 !important; box-shadow: 0 0 
 .stWarning { background: #FDF3E8 !important; color: #B5742A !important; }
 
 /* ── 進捗バー ── */
-[data-testid="stProgress"] > div { background: #ECE8FA !important; border-radius: 10px !important; height: 8px !important; overflow: hidden !important; }
-[data-testid="stProgress"] > div > div { background: linear-gradient(90deg,#9D8FEC,#6B5DD3) !important; border-radius: 10px !important; height: 8px !important; }
+[data-testid="stProgress"] > div { background: #FAE8F0 !important; border-radius: 10px !important; height: 8px !important; overflow: hidden !important; }
+[data-testid="stProgress"] > div > div { background: linear-gradient(90deg,#F09BBC,#E27BA0) !important; border-radius: 10px !important; height: 8px !important; }
 [data-testid="stProgress"] p { color: #A6A6BC !important; font-size: 12px !important; }
 
-hr { border-color: #ECE8FA !important; border-width: 1px 0 0 !important; }
-code { background: #F0EDFA !important; color: #6B5DD3 !important; font-size: .85em !important; padding: 1px 7px !important; border-radius: 8px !important; }
+hr { border-color: #FAE8F0 !important; border-width: 1px 0 0 !important; }
+code { background: #FBEDF3 !important; color: #E27BA0 !important; font-size: .85em !important; padding: 1px 7px !important; border-radius: 8px !important; }
 
 /* ── ファイルアップローダー ── */
-[data-testid="stFileUploader"] { border: none !important; border-radius: 20px !important; background: #FFFFFF !important; box-shadow: 0 3px 14px rgba(120,110,180,.06) !important; }
-[data-testid="stFileUploader"] section { background: #FFFFFF !important; border: 1.5px dashed #D8D0F2 !important; border-radius: 16px !important; }
+[data-testid="stFileUploader"] { border: none !important; border-radius: 20px !important; background: #FFFFFF !important; box-shadow: 0 3px 14px rgba(214,120,160,.06) !important; }
+[data-testid="stFileUploader"] section { background: #FFFFFF !important; border: 1.5px dashed #F2D0E0 !important; border-radius: 16px !important; }
 [data-testid="stFileUploader"] button, [data-testid="stFileUploaderDropzone"] button {
-    background: #FFFFFF !important; color: #6B5DD3 !important;
-    border: 1.5px solid #B7A9F0 !important; border-radius: 14px !important;
+    background: #FFFFFF !important; color: #E27BA0 !important;
+    border: 1.5px solid #F4A9C4 !important; border-radius: 14px !important;
     font-weight: 700 !important; box-shadow: none !important;
 }
-[data-testid="stFileUploader"] button:hover { background: #F7F5FE !important; color: #5A4DC0 !important; }
+[data-testid="stFileUploader"] button:hover { background: #F7F5FE !important; color: #C25A82 !important; }
 
 /* ── チャット入力 ── */
-[data-testid="stBottom"], [data-testid="stBottomBlockContainer"], [data-testid="stChatInput"] { background: #F7F6FB !important; }
-[data-testid="stChatInput"] > div { background: #FFFFFF !important; border: 1.5px solid #E3DEF7 !important; border-radius: 18px !important; }
+[data-testid="stBottom"], [data-testid="stBottomBlockContainer"], [data-testid="stChatInput"] { background: #FDF7FA !important; }
+[data-testid="stChatInput"] > div { background: #FFFFFF !important; border: 1.5px solid #F7DEE9 !important; border-radius: 18px !important; }
 [data-testid="stChatInput"] textarea { background: #FFFFFF !important; color: #3A3A4A !important; }
-[data-testid="stChatInput"] button { background: #6B5DD3 !important; border-radius: 14px !important; }
+[data-testid="stChatInput"] button { background: #E27BA0 !important; border-radius: 14px !important; }
 
 /* ── selectbox ── */
 [data-testid="stSelectbox"] > div > div {
-    background: #FFFFFF !important; border: 1.5px solid #E3DEF7 !important;
+    background: #FFFFFF !important; border: 1.5px solid #F7DEE9 !important;
     border-radius: 14px !important; color: #3A3A4A !important; font-size: 14px !important;
 }
 
-[data-testid="stToast"] { background: #6B5DD3 !important; color: #FFF !important; border-radius: 14px !important; font-size: 14px !important; }
+[data-testid="stToast"] { background: #E27BA0 !important; color: #FFF !important; border-radius: 14px !important; font-size: 14px !important; }
 
 /* ── 手機 (768px 以下) ── */
 @media (max-width: 768px) {
@@ -898,13 +901,13 @@ code { background: #F0EDFA !important; color: #6B5DD3 !important; font-size: .85
 
 /* スクロールバー */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #D8D0F2; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #F2D0E0; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 /* サイドバー開閉ボタン */
 [data-testid="collapsedControl"] button, [data-testid="stSidebarCollapsedControl"] button { font-size: 0 !important; }
 [data-testid="collapsedControl"] button::after, [data-testid="stSidebarCollapsedControl"] button::after {
-    content: '☰' !important; font-size: 22px !important; color: #6B5DD3 !important;
+    content: '☰' !important; font-size: 22px !important; color: #E27BA0 !important;
 }
 </style>
 """
@@ -1865,7 +1868,6 @@ elif page == "today":  # noqa: E501
                 f'</div>'
                 f'<div class="acts">'
                 f'<button class="b spk" onclick="spk(\'{word_js}\')" title="發音">🔊</button>'
-                f'<button class="b del" onclick="del({v["id"]})" title="削除">🗑</button>'
                 f'</div>'
                 f'</div>'
             )
@@ -1896,19 +1898,26 @@ function spk(w){{
   u.lang='en-US';u.rate=0.85;u.volume=1;
   window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
 }}
-function del(id){{
-  // window.parent.location は cross-origin で読めずエラーになるため
-  // document.referrer（＝親アプリのURL、読み取り可）からURLを組み立てる
-  try {{
-    var base = document.referrer || window.location.href;
-    var url = new URL(base);
-    url.searchParams.set('del_vocab', id);
-    window.top.location.href = url.toString();
-  }} catch(e) {{ alert('刪除失敗 / 削除失敗: ' + e); }}
-}}
 </script>
 """
         components.html(list_html, height=min(len(filtered) * 62 + 10, 1400), scrolling=True)
+
+        # ── 単語削除（iframe からは sandbox で親フレームを操作できないため、
+        #    Streamlit ネイティブのコントロールで確実に削除する）──
+        with st.expander(t("today_del_exp")):
+            del_options = {f'{v["word"]}': v["id"] for v in filtered}
+            if del_options:
+                dc1, dc2 = st.columns([4, 1])
+                with dc1:
+                    _sel_word = st.selectbox(
+                        t("today_del_pick"), list(del_options.keys()),
+                        label_visibility="collapsed", key="vocab_del_sel",
+                    )
+                with dc2:
+                    if st.button(t("today_del_btn"), use_container_width=True, key="vocab_del_btn"):
+                        delete_vocabulary(int(del_options[_sel_word]))
+                        st.toast(f'🗑 {_sel_word}', icon="🗑️")
+                        st.rerun()
 
 # ══════════════════════════════════════════════════════════════
 # 頁面五：翻譯練習（AI 出題 → 作答 → 批改 → 存履歷）
