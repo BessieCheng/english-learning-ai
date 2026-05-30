@@ -105,6 +105,9 @@ LANG = {
     "hist_tab_quiz": {"ja": "翻訳練習",       "zh": "翻譯練習"},
     # ── 新聞全文閱讀 ──
     "news_fulltext": {"ja": "全文を読む",     "zh": "全文閱讀"},
+    "news_read_aloud":{"ja": "▶ 朗読",        "zh": "▶ 朗讀"},
+    "news_read_pause":{"ja": "⏸ 一時停止／再開", "zh": "⏸ 暫停／繼續"},
+    "news_read_stop": {"ja": "⏹ 停止",        "zh": "⏹ 停止"},
     # ── 主題切換 ──
     "theme_label":   {"ja": "テーマ",         "zh": "主題"},
     "theme_zen":     {"ja": "禅・無印",       "zh": "禅・無印"},
@@ -1467,6 +1470,35 @@ function saveToVocab(word) {{
 
                 # ── 全文閱讀（純文字、舒適排版）──────────────────
                 with st.expander(t("news_fulltext")):
+                    # 🔊 音声導読（speechSynthesis で全文を朗読）──────────
+                    import json as _json_tts
+                    _tts_text = _json_tts.dumps(body)
+                    _btn_style = ("font-family:'Noto Sans JP',sans-serif;background:#F5F5F5;"
+                                  "color:#444;border:1px solid #DDD;border-radius:4px;"
+                                  "padding:7px 14px;font-size:13px;cursor:pointer;"
+                                  "-webkit-tap-highlight-color:transparent;")
+                    components.html(f"""
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+  <button onclick="play()" style="{_btn_style}">{t('news_read_aloud')}</button>
+  <button onclick="toggle()" style="{_btn_style}">{t('news_read_pause')}</button>
+  <button onclick="stopit()" style="{_btn_style}">{t('news_read_stop')}</button>
+</div>
+<script>
+var TXT = {_tts_text};
+function play(){{
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(TXT);
+  u.lang='en-US'; u.rate=0.9; u.volume=1;
+  window.speechSynthesis.speak(u);
+}}
+function toggle(){{
+  var s = window.speechSynthesis; if(!s) return;
+  if(s.paused) s.resume(); else if(s.speaking) s.pause();
+}}
+function stopit(){{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }}
+</script>
+""", height=48)
                     st.markdown(
                         f'<div style="font-family:Georgia,serif;font-size:16px;line-height:1.9;'
                         f'color:#333;background:#FFF;border:1px solid #E8E8E8;border-radius:2px;'
@@ -1835,77 +1867,43 @@ elif page == "today":  # noqa: E501
         filtered = [v for v in all_vocab if search_q.lower() in v["word"].lower()] if search_q else all_vocab
         st.caption(f"{t('today_cnt1')}{len(filtered)}{t('today_cnt2')}")
 
-        # ── 単語リストを単一 iframe で描画（columns の手機崩れを回避）──
+        # ── 単語リスト（各行ネイティブ：情報 ｜ 🔊発音 ｜ 🗑削除）──
+        #    iframe は sandbox で親フレームを操作できず削除ボタンが効かないため、
+        #    行ごとに Streamlit ネイティブで描画し、🗑 を 🔊 の隣に置く。
         import html as _html
-        rows_html = ""
         for v in filtered:
-            word_esc = _html.escape(v["word"])
-            word_js = v["word"].replace("\\", "\\\\").replace("'", "\\'")
             pos = v.get("part_of_speech", "")
-            pos_html = (f'<code class="pos">{_html.escape(pos)}</code>' if pos else "")
+            pos_html = (f'<span style="font-size:11px;background:#EEE;color:#999;'
+                        f'padding:1px 7px;border-radius:3px;margin-left:4px;">'
+                        f'{_html.escape(pos)}</span>' if pos else "")
             desc = v.get("example", "") if v.get("source") == "pronunciation" else v.get("definition", "")
-            desc = _html.escape(desc or "")
             src = source_labels.get(v.get("source", ""), "重要")
             ref = v.get("reference_title")
-            src_html = f'{_html.escape(src)}　{_html.escape(ref[:16])}{"…" if ref and len(ref) > 16 else ""}' if ref else _html.escape(src)
-            rows_html += (
-                f'<div class="row">'
-                f'<div class="info">'
-                f'<div class="line1"><span class="w">{word_esc}</span>{pos_html}</div>'
-                f'<div class="d">{desc}<span class="s">{src_html}</span></div>'
-                f'</div>'
-                f'<div class="acts">'
-                f'<button class="b spk" onclick="spk(\'{word_js}\')" title="發音">🔊</button>'
-                f'</div>'
-                f'</div>'
-            )
-        list_html = f"""
-<style>
-  *{{box-sizing:border-box;}}
-  body{{margin:0;padding:0;background:transparent;font-family:'Noto Sans JP',sans-serif;}}
-  .row{{display:flex;align-items:center;gap:8px;padding:10px 4px;
-        border-bottom:1px solid #F0F0F0;}}
-  .info{{flex:1;min-width:0;}}
-  .line1{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}}
-  .w{{font-weight:500;color:#1A1A1A;font-size:14px;}}
-  .pos{{font-size:11px;background:#F5F5F5;color:#888;padding:1px 7px;border-radius:2px;white-space:nowrap;}}
-  .d{{font-size:12px;color:#888;margin-top:2px;line-height:1.5;}}
-  .s{{font-size:11px;color:#CCC;margin-left:8px;}}
-  .acts{{display:flex;gap:6px;flex-shrink:0;}}
-  .b{{border:1px solid #E0E0E0;background:#F8F8F8;border-radius:2px;
-      cursor:pointer;padding:5px 9px;font-size:14px;line-height:1;
-      -webkit-tap-highlight-color:transparent;}}
-  .b:hover{{background:#ECECEC;}}
-  .del{{color:#B05050;font-size:12px;padding:5px 7px;}}
-</style>
-<div class="list">{rows_html}</div>
-<script>
-function spk(w){{
-  if(!window.speechSynthesis) return;
-  var u=new SpeechSynthesisUtterance(w);
-  u.lang='en-US';u.rate=0.85;u.volume=1;
-  window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
-}}
-</script>
-"""
-        components.html(list_html, height=min(len(filtered) * 62 + 10, 1400), scrolling=True)
-
-        # ── 単語削除（iframe は sandbox で親フレームを操作できないため、
-        #    Streamlit ネイティブのコントロールで確実に削除する。常時表示）──
-        del_options = {f'{v["word"]}': v["id"] for v in filtered}
-        if del_options:
-            st.markdown(f"**{t('today_del_exp')}**")
-            dc1, dc2 = st.columns([4, 1])
-            with dc1:
-                _sel_word = st.selectbox(
-                    t("today_del_pick"), list(del_options.keys()),
-                    label_visibility="collapsed", key="vocab_del_sel",
+            src_txt = f'{src}　{ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
+            c_info, c_spk, c_del = st.columns([0.80, 0.10, 0.10])
+            with c_info:
+                st.markdown(
+                    f'<div style="padding-top:3px;line-height:1.4;">'
+                    f'<span style="font-weight:600;color:#1A1A1A;font-size:14px;">'
+                    f'{_html.escape(v["word"])}</span>{pos_html}'
+                    f'<div style="font-size:12px;color:#888;margin-top:2px;line-height:1.5;">'
+                    f'{_html.escape(desc or "")}'
+                    f'<span style="font-size:11px;color:#CCC;margin-left:8px;">'
+                    f'{_html.escape(src_txt)}</span></div></div>',
+                    unsafe_allow_html=True,
                 )
-            with dc2:
-                if st.button(t("today_del_btn"), use_container_width=True, key="vocab_del_btn"):
-                    delete_vocabulary(int(del_options[_sel_word]))
-                    st.toast(f'🗑 {_sel_word}', icon="🗑️")
+            with c_spk:
+                speak_button(v["word"])
+            with c_del:
+                if st.button("🗑", key=f"del_vocab_{v['id']}",
+                             help=t("today_del_help"), use_container_width=True):
+                    delete_vocabulary(int(v["id"]))
+                    st.toast(f'🗑 {v["word"]}', icon="🗑️")
                     st.rerun()
+            st.markdown(
+                '<hr style="margin:0;border:none;border-top:1px solid #F0F0F0;">',
+                unsafe_allow_html=True,
+            )
 
 # ══════════════════════════════════════════════════════════════
 # 頁面五：翻譯練習（AI 出題 → 作答 → 批改 → 存履歷）
