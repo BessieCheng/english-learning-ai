@@ -1683,7 +1683,7 @@ elif page == "quiz":
             f'border-radius:2px;padding:28px 24px;margin:12px 0;">'
             f'<div style="font-size:11px;letter-spacing:.2em;color:#CCC;margin-bottom:12px;">'
             f'{t("quiz_question")}</div>'
-            f'<div style="font-size:22px;font-weight:400;color:#1A1A1A;line-height:1.6;">'
+            f'<div style="font-size:clamp(18px,5vw,24px);font-weight:400;color:#1A1A1A;line-height:1.7;">'
             f'{quiz_q["zh"]}</div></div>',
             unsafe_allow_html=True
         )
@@ -1716,34 +1716,35 @@ elif page == "quiz":
         # ── 批改結果 ──
         result = st.session_state.get("quiz_result")
         if result:
+            import html as _h
             score = result.get("score", 0)
             score_color = "#4A7C59" if score >= 80 else ("#C4A45A" if score >= 60 else "#B05050")
+            score_bg = "#F0F7F2" if score >= 80 else ("#FBF6EC" if score >= 60 else "#FBF0F0")
+            # 分數：圓形徽章，更醒目
             st.markdown(
-                f'<div style="text-align:center;margin:16px 0;">'
-                f'<span style="font-size:13px;color:#AAA;letter-spacing:.1em;">{t("quiz_score")}</span><br>'
-                f'<span style="font-size:42px;font-weight:300;color:{score_color};">{score}</span>'
-                f'<span style="font-size:18px;color:#CCC;"> / 100</span></div>',
+                f'<div style="text-align:center;margin:18px 0;">'
+                f'<div style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;'
+                f'width:96px;height:96px;border-radius:50%;background:{score_bg};border:2px solid {score_color};">'
+                f'<span style="font-size:34px;font-weight:300;color:{score_color};line-height:1;">{score}</span>'
+                f'<span style="font-size:11px;color:#AAA;letter-spacing:.1em;margin-top:2px;">/ 100</span>'
+                f'</div></div>',
                 unsafe_allow_html=True
             )
-            # 你的答案 vs 正確答案 並列
-            c1, c2 = st.columns(2)
-            with c1:
-                st.markdown(
-                    f'<div style="border:1px solid #E8E8E8;border-left:3px solid #B05050;'
-                    f'border-radius:2px;padding:12px 14px;background:#FFF;">'
-                    f'<div style="font-size:11px;letter-spacing:.1em;color:#B05050;margin-bottom:6px;">'
-                    f'{t("quiz_your_ans")}</div>'
-                    f'<div style="font-size:14px;color:#333;line-height:1.6;">{st.session_state.get("quiz_user_answer","")}</div></div>',
-                    unsafe_allow_html=True
-                )
-            with c2:
-                st.markdown(
-                    f'<div style="border:1px solid #E8E8E8;border-left:3px solid #4A7C59;'
-                    f'border-radius:2px;padding:12px 14px;background:#FFF;">'
-                    f'<div style="font-size:11px;letter-spacing:.1em;color:#4A7C59;margin-bottom:6px;">'
-                    f'{t("quiz_correct")}</div>'
-                    f'<div style="font-size:14px;color:#333;line-height:1.6;">{result.get("correct","")}</div></div>',
-                    unsafe_allow_html=True
+            # 你的答案 vs 正確答案：flex-wrap（手機自動上下堆疊、桌機並排）
+            _ua = _h.escape(st.session_state.get("quiz_user_answer", ""))
+            _ca = _h.escape(result.get("correct", ""))
+            st.markdown(
+                f'<div style="display:flex;flex-wrap:wrap;gap:10px;margin:8px 0;">'
+                f'<div style="flex:1;min-width:240px;border:1px solid #E8E8E8;border-left:3px solid #B05050;'
+                f'border-radius:2px;padding:12px 14px;background:#FFF;">'
+                f'<div style="font-size:11px;letter-spacing:.1em;color:#B05050;margin-bottom:6px;">{t("quiz_your_ans")}</div>'
+                f'<div style="font-size:14px;color:#333;line-height:1.6;">{_ua}</div></div>'
+                f'<div style="flex:1;min-width:240px;border:1px solid #E8E8E8;border-left:3px solid #4A7C59;'
+                f'border-radius:2px;padding:12px 14px;background:#FFF;">'
+                f'<div style="font-size:11px;letter-spacing:.1em;color:#4A7C59;margin-bottom:6px;">{t("quiz_correct")}</div>'
+                f'<div style="font-size:14px;color:#333;line-height:1.6;">{_ca}</div></div>'
+                f'</div>',
+                unsafe_allow_html=True
                 )
             # 錯誤修正
             errors = result.get("errors", [])
