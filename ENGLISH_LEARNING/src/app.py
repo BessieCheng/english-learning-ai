@@ -105,6 +105,10 @@ LANG = {
     "hist_tab_quiz": {"ja": "翻訳練習",       "zh": "翻譯練習"},
     # ── 新聞全文閱讀 ──
     "news_fulltext": {"ja": "全文を読む",     "zh": "全文閱讀"},
+    # ── 主題切換 ──
+    "theme_label":   {"ja": "テーマ",         "zh": "主題"},
+    "theme_zen":     {"ja": "禅・無印",       "zh": "禅・無印"},
+    "theme_pastel":  {"ja": "パステル",       "zh": "粉彩健康風"},
 
     # ── サイドバー / 側邊欄 ──
     "side_subtitle": {"ja": "英文分析",          "zh": "英文分析"},
@@ -254,18 +258,49 @@ def t(key):
     return LANG.get(key, {}).get(st.session_state["lang"], key)
 
 
-st.markdown(
-    '<div style="padding:4px 0 20px;border-bottom:1px solid #E8E8E8;margin-bottom:28px;">'
-    '<div style="font-size:24px;font-weight:400;letter-spacing:.04em;color:#1A1A1A;line-height:1.4;">'
-    f'{t("title_main")}</div>'
-    '<div style="font-size:14px;font-weight:400;color:#888;letter-spacing:.03em;margin-top:2px;">'
-    f'{t("title_sub")}</div>'
-    '</div>',
-    unsafe_allow_html=True
+# ══════════════════════════════════════════════════════════════
+# テーマ切換（zen = 禅・無印 / pastel = 粉彩健康風）
+# ══════════════════════════════════════════════════════════════
+if "theme" not in st.session_state:
+    st.session_state["theme"] = "zen"
+
+st.sidebar.markdown(
+    f'<div style="font-size:11px;letter-spacing:.12em;color:#999;'
+    f'margin:6px 0 2px;text-transform:uppercase;">{t("theme_label")}</div>',
+    unsafe_allow_html=True,
 )
+_theme_choice = st.sidebar.radio(
+    "Theme", [t("theme_zen"), t("theme_pastel")],
+    index=0 if st.session_state["theme"] == "zen" else 1,
+    label_visibility="collapsed", key="theme_sel",
+)
+st.session_state["theme"] = "zen" if _theme_choice == t("theme_zen") else "pastel"
+THEME = st.session_state["theme"]
+
+# ── 標題（テーマで配色を切替）──
+if THEME == "pastel":
+    st.markdown(
+        '<div style="padding:6px 0 18px;margin-bottom:24px;">'
+        '<div style="font-size:24px;font-weight:600;letter-spacing:.01em;color:#3A3A4A;line-height:1.4;">'
+        f'{t("title_main")}</div>'
+        '<div style="font-size:14px;font-weight:400;color:#9A9AB0;letter-spacing:.01em;margin-top:4px;">'
+        f'{t("title_sub")}</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        '<div style="padding:4px 0 20px;border-bottom:1px solid #E8E8E8;margin-bottom:28px;">'
+        '<div style="font-size:24px;font-weight:400;letter-spacing:.04em;color:#1A1A1A;line-height:1.4;">'
+        f'{t("title_main")}</div>'
+        '<div style="font-size:14px;font-weight:400;color:#888;letter-spacing:.03em;margin-top:2px;">'
+        f'{t("title_sub")}</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 # ── 禅・無印 テーマ + 手機響應式 CSS ────────────────────────────
-st.markdown("""
+ZEN_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap');
 
@@ -651,7 +686,231 @@ h3::before {
     color: #555 !important;
 }
 </style>
-""", unsafe_allow_html=True)
+"""
+
+# ── 粉彩健康風 テーマ（柔和パステル・大きい角丸カード）────────────
+PASTEL_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+/* ── 全体背景・フォント（淡い紫がかった白）── */
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #F7F6FB !important;
+    color: #3A3A4A !important;
+}
+[data-testid="stHeader"] { background: transparent !important; background-color: rgba(0,0,0,0) !important; }
+[data-testid="stToolbar"] { background: transparent !important; }
+[data-testid="stAppViewContainer"] {
+    font-family: 'Nunito', 'Noto Sans JP', 'Helvetica Neue', sans-serif !important;
+    font-weight: 400;
+}
+
+/* ── メインエリア ── */
+.main .block-container {
+    max-width: 100%;
+    padding: 2rem 2rem 4rem;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    background: #F7F6FB;
+}
+
+/* ── 見出し（丸く太く親しみやすい）── */
+h1 { font-size: 1.6rem !important; font-weight: 800 !important; color: #3A3A4A !important; letter-spacing: 0 !important; }
+h2 { font-size: 1.25rem !important; font-weight: 700 !important; color: #3A3A4A !important;
+     letter-spacing: 0 !important; border-bottom: none !important; padding-bottom: .2rem !important; }
+h3 { font-size: 1.08rem !important; font-weight: 700 !important; color: #3A3A4A !important; }
+.stCaption p { color: #A6A6BC !important; font-size: 12px !important; letter-spacing: .02em; }
+[data-testid="stAppViewContainer"] p { line-height: 1.7 !important; }
+
+/* h3 の左ラインを薄紫の丸ドットに */
+h3 { position: relative !important; padding-left: 16px !important; margin-top: 8px !important; }
+h3::before {
+    content: '' !important; position: absolute !important; left: 0 !important;
+    top: 50% !important; transform: translateY(-50%) !important;
+    width: 9px !important; height: 9px !important;
+    background: #B7A9F0 !important; border-radius: 50% !important;
+}
+
+/* ── サイドバー（白＋淡い影）── */
+[data-testid="stSidebar"] {
+    background-color: #FFFFFF !important;
+    border-right: none !important;
+    box-shadow: 2px 0 12px rgba(120,110,180,.05) !important;
+}
+[data-testid="stSidebar"] * { font-family: 'Nunito','Noto Sans JP', sans-serif !important; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] p { color: #5A5A6E !important; }
+
+/* サイドバーのメニューをパステルのピル風に */
+[data-testid="stSidebar"] .stRadio > div { gap: 6px !important; }
+[data-testid="stSidebar"] .stRadio label {
+    font-size: 14px !important; color: #6A6A7E !important;
+    padding: 11px 16px !important; margin: 0 !important;
+    border: none !important; border-radius: 16px !important;
+    background: #F4F2FC !important;
+    transition: background .15s, color .15s !important;
+}
+[data-testid="stSidebar"] .stRadio label:hover { background: #ECE8FA !important; color: #6B5DD3 !important; }
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    background: #6B5DD3 !important; color: #FFFFFF !important; font-weight: 700 !important;
+}
+[data-testid="stSidebar"] .stRadio label > div:first-child { display: none !important; }
+
+/* ── ボタン（角丸・淡い紫）── */
+.stButton > button {
+    background-color: #FFFFFF !important;
+    color: #6B5DD3 !important;
+    border: 1.5px solid #E3DEF7 !important;
+    border-radius: 18px !important;
+    font-family: 'Nunito','Noto Sans JP', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: .01em !important;
+    font-size: 14px !important;
+    padding: 9px 22px !important;
+    transition: all .18s !important;
+    white-space: normal !important; word-break: break-word !important;
+    line-height: 1.4 !important; min-height: 42px !important;
+    box-shadow: 0 2px 6px rgba(120,110,180,.06) !important;
+}
+.stButton > button:hover {
+    border-color: #B7A9F0 !important; color: #5A4DC0 !important;
+    background-color: #F7F5FE !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(120,110,180,.12) !important;
+}
+.stButton > button[kind="primary"],
+[data-testid="baseButton-primary"] {
+    background: linear-gradient(135deg,#7D6CE0,#6B5DD3) !important;
+    color: #FFF !important; border: none !important;
+    box-shadow: 0 4px 14px rgba(107,93,211,.30) !important;
+}
+[data-testid="baseButton-primary"]:hover {
+    background: linear-gradient(135deg,#6B5DD3,#5A4DC0) !important; color: #FFF !important;
+}
+
+/* ── 入力・セレクト（角丸）── */
+input, textarea, select,
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea {
+    background: #FFFFFF !important;
+    border: 1.5px solid #E3DEF7 !important;
+    border-radius: 14px !important;
+    color: #3A3A4A !important;
+    font-family: 'Nunito','Noto Sans JP', sans-serif !important;
+    font-size: 14px !important;
+}
+input:focus, textarea:focus { border-color: #B7A9F0 !important; box-shadow: 0 0 0 3px rgba(183,169,240,.18) !important; }
+
+/* ── メトリクス（パステルカード）── */
+[data-testid="metric-container"], [data-testid="stMetric"] {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-radius: 20px !important;
+    padding: 20px 22px !important;
+    box-shadow: 0 3px 14px rgba(120,110,180,.07) !important;
+}
+[data-testid="stMetricValue"] { font-size: 2rem !important; font-weight: 800 !important; color: #6B5DD3 !important; }
+[data-testid="stMetricLabel"] {
+    font-size: 11px !important; color: #A6A6BC !important;
+    letter-spacing: .06em !important; text-transform: uppercase !important; font-weight: 700 !important;
+}
+
+/* ── エクスパンダー（角丸カード＋影）── */
+[data-testid="stExpander"] {
+    border: none !important;
+    border-radius: 20px !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 3px 14px rgba(120,110,180,.06) !important;
+    margin-bottom: 12px !important;
+    transition: box-shadow .18s, transform .18s !important;
+    overflow: hidden !important;
+}
+[data-testid="stExpander"]:hover { box-shadow: 0 6px 20px rgba(120,110,180,.12) !important; transform: translateY(-1px) !important; }
+[data-testid="stExpander"] summary {
+    background: #FFFFFF !important; font-size: 14px !important;
+    color: #5A5A6E !important; font-weight: 700 !important; padding: 4px 4px !important;
+}
+[data-testid="stExpander"] summary:hover { color: #6B5DD3 !important; }
+
+/* ── タブ（ピル風）── */
+[data-testid="stTabs"] [role="tablist"] { border-bottom: none !important; gap: 8px !important; }
+[data-testid="stTabs"] button[role="tab"] {
+    font-size: 13px !important; color: #9A9AB0 !important;
+    letter-spacing: .01em !important; font-weight: 700 !important;
+    padding: 8px 18px !important; border-bottom: none !important;
+    background: #F0EDFA !important; border-radius: 14px !important;
+}
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+    color: #FFFFFF !important; background: #6B5DD3 !important;
+}
+
+/* ── alert（パステル）── */
+[data-testid="stAlert"] { border-radius: 16px !important; border-left-width: 0 !important; font-size: 14px !important; }
+.stSuccess { background: #EAF7EF !important; color: #2E7D52 !important; }
+.stInfo    { background: #EEF1FD !important; color: #4A56B5 !important; }
+.stWarning { background: #FDF3E8 !important; color: #B5742A !important; }
+
+/* ── 進捗バー ── */
+[data-testid="stProgress"] > div { background: #ECE8FA !important; border-radius: 10px !important; height: 8px !important; overflow: hidden !important; }
+[data-testid="stProgress"] > div > div { background: linear-gradient(90deg,#9D8FEC,#6B5DD3) !important; border-radius: 10px !important; height: 8px !important; }
+[data-testid="stProgress"] p { color: #A6A6BC !important; font-size: 12px !important; }
+
+hr { border-color: #ECE8FA !important; border-width: 1px 0 0 !important; }
+code { background: #F0EDFA !important; color: #6B5DD3 !important; font-size: .85em !important; padding: 1px 7px !important; border-radius: 8px !important; }
+
+/* ── ファイルアップローダー ── */
+[data-testid="stFileUploader"] { border: none !important; border-radius: 20px !important; background: #FFFFFF !important; box-shadow: 0 3px 14px rgba(120,110,180,.06) !important; }
+[data-testid="stFileUploader"] section { background: #FFFFFF !important; border: 1.5px dashed #D8D0F2 !important; border-radius: 16px !important; }
+[data-testid="stFileUploader"] button, [data-testid="stFileUploaderDropzone"] button {
+    background: #FFFFFF !important; color: #6B5DD3 !important;
+    border: 1.5px solid #B7A9F0 !important; border-radius: 14px !important;
+    font-weight: 700 !important; box-shadow: none !important;
+}
+[data-testid="stFileUploader"] button:hover { background: #F7F5FE !important; color: #5A4DC0 !important; }
+
+/* ── チャット入力 ── */
+[data-testid="stBottom"], [data-testid="stBottomBlockContainer"], [data-testid="stChatInput"] { background: #F7F6FB !important; }
+[data-testid="stChatInput"] > div { background: #FFFFFF !important; border: 1.5px solid #E3DEF7 !important; border-radius: 18px !important; }
+[data-testid="stChatInput"] textarea { background: #FFFFFF !important; color: #3A3A4A !important; }
+[data-testid="stChatInput"] button { background: #6B5DD3 !important; border-radius: 14px !important; }
+
+/* ── selectbox ── */
+[data-testid="stSelectbox"] > div > div {
+    background: #FFFFFF !important; border: 1.5px solid #E3DEF7 !important;
+    border-radius: 14px !important; color: #3A3A4A !important; font-size: 14px !important;
+}
+
+[data-testid="stToast"] { background: #6B5DD3 !important; color: #FFF !important; border-radius: 14px !important; font-size: 14px !important; }
+
+/* ── 手機 (768px 以下) ── */
+@media (max-width: 768px) {
+    .main .block-container { padding: .75rem .75rem 3rem !important; }
+    h1 { font-size: 1.2rem !important; line-height: 1.5 !important; }
+    h2 { font-size: 1.05rem !important; }
+    h3 { font-size: .95rem !important; }
+    [data-testid="column"] { overflow: hidden; min-width: 0; }
+    code, pre { white-space: pre-wrap !important; word-break: break-word !important; }
+    [data-testid="stTabs"] button[role="tab"] { padding: 7px 12px !important; font-size: 12px !important; }
+    [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+    .stButton > button { font-size: 13px !important; padding: 8px 14px !important; min-height: 40px !important; }
+    [data-testid="stExpander"] summary p { font-size: 13px !important; }
+}
+
+/* スクロールバー */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #D8D0F2; border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* サイドバー開閉ボタン */
+[data-testid="collapsedControl"] button, [data-testid="stSidebarCollapsedControl"] button { font-size: 0 !important; }
+[data-testid="collapsedControl"] button::after, [data-testid="stSidebarCollapsedControl"] button::after {
+    content: '☰' !important; font-size: 22px !important; color: #6B5DD3 !important;
+}
+</style>
+"""
+
+# テーマに応じて CSS を注入
+st.markdown(PASTEL_CSS if THEME == "pastel" else ZEN_CSS, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
 # 側邊欄：導覽選單
