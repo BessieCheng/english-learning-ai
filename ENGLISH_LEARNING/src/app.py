@@ -2163,10 +2163,15 @@ div[class*="st-key-del_vocab_"] button:hover {
         # ── 単語リスト（各行ネイティブ：情報 ｜ 🎧発音 ｜ －削除）──
         #    iframe は sandbox で親フレームを操作できず削除が効かないため
         #    行ごとに Streamlit ネイティブで描画し、－ を 🎧 の隣に置く。
+        # ブランド配色（動物風はブランドガイドの暖色、その他は従来のグレー）
+        if THEME == "animal":
+            _vw, _vpb, _vpf, _vmut, _vsrc = "#6B5644", "#FCEFCF", "#B0863A", "#9C8B72", "#C9B79A"
+        else:
+            _vw, _vpb, _vpf, _vmut, _vsrc = "#1A1A1A", "#EEE", "#999", "#888", "#CCC"
         import html as _html
         for m in merged_list:
             pos = m.get("part_of_speech", "")
-            pos_html = (f'<span style="font-size:11px;background:#EEE;color:#999;'
+            pos_html = (f'<span style="font-size:11px;background:{_vpb};color:{_vpf};'
                         f'padding:1px 7px;border-radius:3px;margin-left:4px;">'
                         f'{_html.escape(pos)}</span>' if pos else "")
             desc = m.get("definition") or m.get("example") or ""
@@ -2177,11 +2182,11 @@ div[class*="st-key-del_vocab_"] button:hover {
             with c_info:
                 st.markdown(
                     f'<div style="padding-top:3px;line-height:1.4;">'
-                    f'<span style="font-weight:600;color:#1A1A1A;font-size:14px;">'
+                    f'<span style="font-weight:600;color:{_vw};font-size:14px;">'
                     f'{_html.escape(m["word"])}</span>{pos_html}'
-                    f'<div style="font-size:12px;color:#888;margin-top:2px;line-height:1.5;">'
+                    f'<div style="font-size:12px;color:{_vmut};margin-top:2px;line-height:1.5;">'
                     f'{_html.escape(desc)}'
-                    f'<span style="font-size:11px;color:#CCC;margin-left:8px;">'
+                    f'<span style="font-size:11px;color:{_vsrc};margin-left:8px;">'
                     f'{_html.escape(src_txt)}</span></div></div>',
                     unsafe_allow_html=True,
                 )
