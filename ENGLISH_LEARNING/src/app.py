@@ -2034,9 +2034,10 @@ elif page == "quiz":
 
     quiz_q = st.session_state.get("quiz_q")
     if quiz_q:
-        # ── 題目卡片（中文句子）──
+        # ── 題目卡片（中文句子）。上端アクセントはテーマ連動 ──
+        _q_acc = "#F4C152" if THEME == "animal" else "#4A7C59"
         st.markdown(
-            f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid #4A7C59;'
+            f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid {_q_acc};'
             f'border-radius:2px;padding:28px 24px;margin:12px 0;">'
             f'<div style="font-size:11px;letter-spacing:.2em;color:#CCC;margin-bottom:12px;">'
             f'{t("quiz_question")}</div>'
