@@ -1189,6 +1189,16 @@ elif page == "news":
 
                 words_html = " ".join(make_span(w) for w in body.split())
 
+                # ニュース iframe のアクセント色をテーマに合わせる（① 最適化）
+                if THEME == "animal":
+                    _n_hl = "background:#F4C152; color:#6B5644;"   # hover ハイライト（蜂蜜地・茶文字）
+                    _n_txt = "#B0863A"                            # 白地の上のアクセント文字（キャラメル）
+                    _n_btn, _n_btn_h = "#C99A2E", "#B0863A"        # 保存ボタンの地色／hover
+                else:
+                    _n_hl = "background:#4A7C59; color:#fff;"
+                    _n_txt = "#4A7C59"
+                    _n_btn, _n_btn_h = "#4A7C59", "#3D6A4B"
+
                 html_block = f"""
 <style>
   * {{ box-sizing: border-box; }}
@@ -1210,7 +1220,7 @@ elif page == "news":
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }}
-  .w:hover, .w.active {{ background: #4A7C59; color: #fff; }}
+  .w:hover, .w.active {{ {_n_hl} }}
   #tooltip {{
     position: fixed;
     background: #FFF;
@@ -1226,7 +1236,7 @@ elif page == "news":
     max-width: min(220px, 80vw);
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   }}
-  #tooltip .en {{ font-weight: bold; color: #4A7C59; font-size: clamp(13px, 4vw, 15px); }}
+  #tooltip .en {{ font-weight: bold; color: {_n_txt}; font-size: clamp(13px, 4vw, 15px); }}
   #tooltip .jp {{ color: #B07A2A; }}
   #tooltip .zh {{ color: #3D7A4B; }}
   .tip {{ font-size: clamp(11px, 3vw, 12px); color: #AAA; margin-bottom: 6px; }}
@@ -1240,7 +1250,7 @@ elif page == "news":
     width: min(260px, 85vw);
     box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   }}
-  #ctx-menu .ctx-word {{ color:#4A7C59; font-weight:bold; font-size:clamp(14px,4vw,16px); margin-bottom:8px; }}
+  #ctx-menu .ctx-word {{ color:{_n_txt}; font-weight:bold; font-size:clamp(14px,4vw,16px); margin-bottom:8px; }}
   #ctx-menu select, #ctx-menu input {{
     width: 100%; background: #FFF; color: #333;
     border: 1px solid #DDD; border-radius: 2px;
@@ -1248,13 +1258,13 @@ elif page == "news":
     box-sizing: border-box; margin-bottom: 6px;
   }}
   #ctx-menu button {{
-    width: 100%; background: #4A7C59; color: #fff;
+    width: 100%; background: {_n_btn}; color: #fff;
     border: none; border-radius: 2px;
     padding: 10px; cursor: pointer; font-size: clamp(13px,3.5vw,14px);
   }}
-  #ctx-menu button:hover, #ctx-menu button:active {{ background: #3D6A4B; }}
+  #ctx-menu button:hover, #ctx-menu button:active {{ background: {_n_btn_h}; }}
   #ctx-saved {{
-    color: #4A7C59; font-size: 13px; text-align: center;
+    color: {_n_txt}; font-size: 13px; text-align: center;
     margin-top: 6px; display: none;
   }}
 </style>
