@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --cream:#FFFBF2; --surface:#FFF; --honey:#F4C152; --honeyD:#E8AE3A;
+    --mint:#9FD8A6; --pink:#FBD7E4; --pinkD:#F49CB8; --brown:#6B5644;
+    --muted:#B6A088; --border:#EFE1C8;
+  }
+  body{background:var(--cream);font-family:'Zen Maru Gothic',sans-serif;color:var(--brown);padding:40px 48px;}
+  .doc-h{font-family:'Mochiy Pop One';font-size:13px;color:var(--muted);letter-spacing:.3em;text-transform:uppercase;margin-bottom:6px;}
+  .sec{margin:34px 0 0;}
+  .sec-t{font-size:13px;font-weight:700;color:var(--honeyD);letter-spacing:.12em;text-transform:uppercase;
+         border-bottom:2px dotted var(--border);padding-bottom:6px;margin-bottom:18px;}
+  /* Logo */
+  .logo{font-family:'Mochiy Pop One';font-size:34px;color:var(--brown);
+        background:linear-gradient(transparent 60%, var(--pink) 60%);padding:2px 10px;display:inline-block;}
+  .logo .dot{color:var(--honeyD);}
+  .logo-sub{font-size:13px;color:var(--muted);font-weight:700;margin-top:10px;}
+  /* palette */
+  .sw{display:inline-flex;flex-direction:column;width:128px;margin:0 12px 12px 0;vertical-align:top;}
+  .chip{height:58px;border-radius:14px;border:1px solid rgba(0,0,0,.05);}
+  .sw b{font-size:12px;margin-top:7px;color:var(--brown);}
+  .sw span{font-size:11px;color:var(--muted);}
+  /* type */
+  .t-d{font-family:'Mochiy Pop One';font-size:30px;color:var(--brown);}
+  .t-h2{font-family:'Mochiy Pop One';font-size:20px;color:var(--brown);margin-top:8px;}
+  .t-h3{font-size:17px;font-weight:700;color:var(--brown);position:relative;padding-left:18px;margin-top:10px;}
+  .t-h3::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:10px;height:10px;background:var(--mint);border:2px solid var(--brown);border-radius:50%;}
+  .t-b{font-size:14px;color:#5a5040;margin-top:8px;line-height:1.8;}
+  .t-c{font-size:11px;color:var(--muted);letter-spacing:.06em;margin-top:6px;}
+  /* components */
+  .row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .btn{border-radius:18px;font-weight:700;font-size:14px;padding:9px 22px;cursor:pointer;font-family:'Zen Maru Gothic';}
+  .btn.pri{background:linear-gradient(135deg,#F8CE63,var(--honey));color:var(--brown);border:2px solid var(--honeyD);box-shadow:0 4px 12px rgba(228,174,58,.3);}
+  .btn.out{background:#FFF;color:#B0863A;border:2px solid var(--honey);}
+  .btn.ghost{background:#FBF0D8;color:var(--brown);border:none;}
+  .badge{display:inline-block;background:#FCEFCF;color:#B0863A;font-size:13px;padding:3px 12px;border-radius:8px;}
+  .pill{display:inline-block;background:var(--honey);color:var(--brown);font-weight:700;font-size:13px;padding:7px 16px;border-radius:14px;}
+  .ibox{width:46px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:2px;font-size:18px;vertical-align:middle;}
+  .ibox.del{color:#C0504D;font-size:22px;}
+  .card{background:#FFF;border:1px solid #E8E8E8;border-radius:14px;padding:22px;box-shadow:0 2px 10px rgba(200,165,95,.10);max-width:360px;}
+  .card .w{font-size:30px;font-weight:300;color:#1A1A1A;text-align:center;}
+  .alert{border-radius:14px;padding:11px 16px;font-size:13px;font-weight:700;}
+  .a-ok{background:#EFF7E6;color:#5C7A3A;} .a-info{background:#FFF6E0;color:#A6792A;}
+</style></head>
+<body>
+  <div class="doc-h">Brand Guidelines ・ 動物風 v2</div>
+  <div class="logo">えいご<span class="dot">・</span>ノート</div>
+  <div class="logo-sub">英文対話分析・スマート単語帳 ／ AI で英会話を分析・単語を記憶</div>
+
+  <div class="sec"><div class="sec-t">Color Palette</div>
+    <div class="sw"><div class="chip" style="background:#FFFBF2"></div><b>Cream BG</b><span>#FFFBF2</span></div>
+    <div class="sw"><div class="chip" style="background:#FFFFFF"></div><b>Surface</b><span>#FFFFFF</span></div>
+    <div class="sw"><div class="chip" style="background:#F4C152"></div><b>Honey ★</b><span>#F4C152</span></div>
+    <div class="sw"><div class="chip" style="background:#E8AE3A"></div><b>Honey Dark</b><span>#E8AE3A</span></div>
+    <div class="sw"><div class="chip" style="background:#9FD8A6"></div><b>Mint</b><span>#9FD8A6</span></div>
+    <div class="sw"><div class="chip" style="background:#FBD7E4"></div><b>Pink Marker</b><span>#FBD7E4</span></div>
+    <div class="sw"><div class="chip" style="background:#6B5644"></div><b>Text Brown</b><span>#6B5644</span></div>
+    <div class="sw"><div class="chip" style="background:#B6A088"></div><b>Muted</b><span>#B6A088</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">Typography</div>
+    <div class="t-d">見出し Display — Mochiy Pop One</div>
+    <div class="t-h2">セクション H2 — Mochiy Pop One</div>
+    <div class="t-h3">小見出し H3 — Zen Maru Gothic Bold</div>
+    <div class="t-b">本文 Body — Zen Maru Gothic。やさしく丸い書体で、英語と日本語が読みやすい。The quick brown fox.</div>
+    <div class="t-c">キャプション CAPTION ・ ZEN MARU GOTHIC</div>
+  </div>
+
+  <div class="sec"><div class="sec-t">Buttons & Tags</div>
+    <div class="row">
+      <button class="btn pri">▶ 朗読</button>
+      <button class="btn out">🔊 発音</button>
+      <button class="btn ghost">出題</button>
+      <span class="pill">録音分析</span>
+      <span class="badge">adjective</span>
+      <span class="ibox">🎧</span><span class="ibox del">－</span>
+    </div>
+  </div>
+
+  <div class="sec"><div class="sec-t">Components</div>
+    <div class="row" style="align-items:flex-start;">
+      <div class="card"><div class="w">fluffy</div><div style="text-align:center;margin-top:10px;"><span class="badge">adjective</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="alert a-ok">✓ 分析完了！</div>
+        <div class="alert a-info">ℹ️ まだ記録がありません</div>
+      </div>
+    </div>
+  </div>
+</body></html>
