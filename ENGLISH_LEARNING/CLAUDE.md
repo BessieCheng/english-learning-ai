@@ -25,6 +25,12 @@
 - **All fixes must reach the cloud**: After every edit, immediately `git commit` and `git push origin main`. Never leave changes local-only — Streamlit Cloud only redeploys from GitHub.
 - **設計/視覺改動先給預覽再推**：UI、配色、版面、字體、按鈕樣式等視覺改動，先用 `design-preview` skill 產生靜態 HTML 截圖給使用者確認，OK 後再推（Streamlit 自身截圖不可靠）。
 - **推之前先驗證**：用 `streamlit-verify` skill（`.claude/skills/streamlit-verify/verify.sh`）做語法＋啟動＋HTTP 200 檢查，再 commit + push。
-- **`.env` / Secrets**：`.env` 不進 git；GEMINI_API_KEY 等金鑰在 Streamlit Cloud 的 Settings → Secrets 設定。除 GEMINI_API_KEY 外，勿更動其他金鑰。
+- **`.env.local` / Secrets**：所有 API 密鑰放 `.env.local`，此檔必須在第一次 push 前加入 `.gitignore`，禁止使用裸露的 `.env`。腳本用 `load_dotenv(".env.local")`。Streamlit Cloud 金鑰在 Settings → Secrets 設定，除 GEMINI_API_KEY 外勿更動其他金鑰。
+
+## 5. 密鑰管理規則（無例外）
+- 所有 API 密鑰必須放在 `.env.local`
+- `.env.local` 必須在第一次 push 之前加入 `.gitignore`
+- 腳本讀取方式：`load_dotenv(".env.local")`
+- 禁止使用裸露的 `.env`（無 `.local` 後綴）作為密鑰檔
 
 請用中文回答

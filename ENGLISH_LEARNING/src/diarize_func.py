@@ -7,7 +7,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(".env.local")
 
 
 def diarize(audio_path, whisper_result=None):
@@ -20,7 +20,7 @@ def diarize(audio_path, whisper_result=None):
 
     api_key = os.getenv("ASSEMBLYAI_API_KEY")
     if not api_key:
-        raise RuntimeError("ASSEMBLYAI_API_KEY 未設定，請在 .env 加入")
+        raise RuntimeError("ASSEMBLYAI_API_KEY 未設定，請在 .env.local 加入")
 
     aai.settings.api_key = api_key
 

@@ -5,7 +5,7 @@ import time
 from google import genai
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(".env.local")
 
 MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
 

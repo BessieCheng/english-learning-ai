@@ -118,7 +118,7 @@ check("diarize_func: config 序列化", test_diarize_import)
 def test_assemblyai_api():
     import assemblyai as aai
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(".env.local")
     api_key = os.getenv("ASSEMBLYAI_API_KEY")
     assert api_key, "ASSEMBLYAI_API_KEY 未設定"
     aai.settings.api_key = api_key

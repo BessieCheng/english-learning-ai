@@ -20,7 +20,7 @@ from database import (init_database, get_all_sessions, get_vocabulary_due_today,
                        save_translation_quiz, get_all_translation_quiz,
                        delete_translation_quiz)
 
-load_dotenv()
+load_dotenv(".env.local")
 init_database()
 
 

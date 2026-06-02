@@ -4,7 +4,7 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(".env.local")
 
 def transcribe(audio_path):
     """呼叫 Groq Whisper API，回傳逐字稿字串。"""

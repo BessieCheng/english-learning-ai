@@ -11,7 +11,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(".env.local")
 
 # ── 多益分數對應的程度說明 ─────────────────────────────────────
 TOEIC_LEVELS = {

@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 # TOEIC 等級 → (CEFR, 風格描述) 對應，與新聞頁共用
 from news_search import TOEIC_LEVELS
 
-load_dotenv()
+load_dotenv(".env.local")
 
 MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
 
