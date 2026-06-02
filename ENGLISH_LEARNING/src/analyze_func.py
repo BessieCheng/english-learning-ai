@@ -1,6 +1,7 @@
 # Gemini 分析的核心函式，供 app.py 和 pipeline.py 共用
 import os
 import json
+import re
 import time
 from google import genai
 from dotenv import load_dotenv
@@ -8,6 +9,24 @@ from dotenv import load_dotenv
 load_dotenv(".env.local")
 
 MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
+
+
+def _extract_json(raw: str) -> dict:
+    """從 Gemini 回應中穩健地萃取 JSON，處理 markdown code block 或前綴說明文字。"""
+    raw = raw.strip()
+    # 去除 ```json ... ``` 或 ``` ... ``` 包裝
+    raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
+    raw = re.sub(r"\n?```$", "", raw)
+    raw = raw.strip()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # 找第一個 { 到最後一個 } 的範圍
+        start = raw.find("{")
+        end = raw.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return json.loads(raw[start:end + 1])
+        raise
 
 
 def lookup_word(word):
@@ -30,9 +49,7 @@ Return ONLY a valid JSON object with no extra text:
             try:
                 response = client.models.generate_content(model=model_name, contents=prompt)
                 raw = response.text.strip()
-                if raw.startswith("```"):
-                    raw = "\n".join(raw.split("\n")[1:-1])
-                return json.loads(raw)
+                return _extract_json(raw)
             except Exception as e:
                 err = str(e)
                 if "404" in err or "NOT_FOUND" in err:
@@ -171,8 +188,5 @@ Transcript:
 
     if not raw:
         raise RuntimeError("Gemini が全モデルで失敗しました。しばらく待ってから再試行してください。")
-    if raw.startswith("```"):
-        lines = raw.split("\n")
-        raw = "\n".join(lines[1:-1])
 
-    return json.loads(raw)
+    return _extract_json(raw)
