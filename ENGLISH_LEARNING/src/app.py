@@ -2162,10 +2162,41 @@ div[class*="st-key-vc_"] input[type="checkbox"] { width:18px !important; height:
         import html as _html
         for m in merged_list:
             pos = m.get("part_of_speech", "")
+            # pronunciation 來源且缺乏詞義（None 或舊格式的長段發音說明）→ 自動查詞義並寫回 DB
+            _is_pron = "pronunciation" in m.get("sources", [])
+            _def = m.get("definition") or ""
+            _needs_lookup = _is_pron and (not _def or len(_def) > 60)
+            if _needs_lookup:
+                try:
+                    from analyze_func import lookup_word
+                    from database import get_db as _get_db
+                    info = lookup_word(m["word"])
+                    new_def = f"{info['definition_jp']} / {info['definition_zh']}"
+                    # 舊格式的長說明移存 example，definition 改為詞義
+                    old_tip = _def if len(_def) > 60 else ""
+                    for _id in m["ids"]:
+                        with _get_db() as _c:
+                            _cur2 = _c.cursor()
+                            if old_tip:
+                                _cur2.execute(
+                                    "UPDATE vocabulary SET definition=%s, part_of_speech=%s, example=COALESCE(example,'')||%s WHERE id=%s",
+                                    (new_def, info.get("part_of_speech", ""), f" [{old_tip[:120]}]", _id)
+                                )
+                            else:
+                                _cur2.execute(
+                                    "UPDATE vocabulary SET definition=%s, part_of_speech=%s WHERE id=%s",
+                                    (new_def, info.get("part_of_speech", ""), _id)
+                                )
+                            _cur2.close()
+                    m["definition"] = new_def
+                    if not pos:
+                        pos = info.get("part_of_speech", "")
+                except Exception:
+                    pass
             pos_html = (f'<span style="font-size:11px;background:{_vpb};color:{_vpf};'
                         f'padding:1px 7px;border-radius:3px;margin-left:4px;">'
                         f'{_html.escape(pos)}</span>' if pos else "")
-            desc = m.get("definition") or m.get("example") or ""
+            desc = m.get("definition") or ""
             src = "／".join(source_labels.get(s, "重要") for s in m["sources"])
             ref = m.get("reference_title")
             src_txt = f'{src}　{ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src

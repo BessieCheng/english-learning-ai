@@ -163,10 +163,14 @@ def save_session(audio_file, transcript, analysis, diarized=None, reference_titl
             if isinstance(tip, dict) and tip.get("example"):
                 word = tip["example"].split()[0].strip(".,!?\"'():").lower()
                 if word and not _word_exists(word):
+                    # definition 留空，待自動查詞義補填；發音說明存入 example
+                    pron_note = tip.get("tip", "")
+                    pron_ex   = tip.get("example", "")
+                    combined  = f"{pron_note} [{pron_ex}]" if pron_ex else pron_note
                     cur.execute("""
                         INSERT INTO vocabulary (session_id, word, definition, example, source)
                         VALUES (%s, %s, %s, %s, 'pronunciation')
-                    """, (session_id, word, tip.get("tip", ""), tip.get("example", "")))
+                    """, (session_id, word, None, combined))
 
         for hw in analysis.get("hesitant_words", []):
             if hw.get("word") and not _word_exists(hw["word"]):
