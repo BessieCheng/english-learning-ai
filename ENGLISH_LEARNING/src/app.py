@@ -119,6 +119,7 @@ LANG = {
     "theme_label":   {"ja": "テーマ",         "zh": "主題"},
     "theme_zen":     {"ja": "禅・無印",       "zh": "禅・無印"},
     "theme_animal":  {"ja": "どうぶつ",       "zh": "動物風"},
+    "theme_bold":    {"ja": "大字報",         "zh": "大字報"},
 
     # ── サイドバー / 側邊欄 ──
     "side_subtitle": {"ja": "英文分析",          "zh": "英文分析"},
@@ -289,7 +290,7 @@ st.sidebar.markdown(
     f'margin:6px 0 2px;text-transform:uppercase;">{t("theme_label")}</div>',
     unsafe_allow_html=True,
 )
-_theme_labels = {"zen": t("theme_zen"), "animal": t("theme_animal")}
+_theme_labels = {"zen": t("theme_zen"), "animal": t("theme_animal"), "bold": t("theme_bold")}
 _theme_keys = list(_theme_labels.keys())
 _theme_choice = st.sidebar.radio(
     "Theme", [_theme_labels[k] for k in _theme_keys],
@@ -308,6 +309,17 @@ if THEME == "animal":
         'background:linear-gradient(transparent 60%, #FBD7E4 60%);padding:0 6px;">'
         f'{t("title_main")}</span>'
         '<div style="font-size:14px;font-weight:700;color:#A9B98A;letter-spacing:.01em;margin-top:16px;">'
+        f'{t("title_sub")}</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+elif THEME == "bold":
+    st.markdown(
+        '<div style="padding:6px 0 20px;margin-bottom:24px;">'
+        '<div style="font-size:10px;font-weight:900;letter-spacing:.3em;color:#888;margin-bottom:6px;">ENGLISH LEARNING AI</div>'
+        '<div style="font-size:30px;font-weight:900;color:#1A1A1A;line-height:1.2;">'
+        f'<span style="background:#C8E64C;padding:0 6px;">{t("title_main")}</span></div>'
+        '<div style="font-size:13px;font-weight:700;color:#555;letter-spacing:.05em;margin-top:10px;">'
         f'{t("title_sub")}</div>'
         '</div>',
         unsafe_allow_html=True
@@ -887,8 +899,141 @@ code { background:#FCEFCF !important; color:#B0863A !important; font-size:.85em 
 </style>
 """
 
+BOLD_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #F2F2E6 !important; color: #1A1A1A !important;
+}
+[data-testid="stHeader"] { background: transparent !important; background-color: rgba(0,0,0,0) !important; }
+[data-testid="stToolbar"] { background: transparent !important; }
+[data-testid="stAppViewContainer"] { font-family: 'Noto Sans TC','Noto Sans JP','Helvetica Neue',sans-serif !important; }
+.main .block-container { max-width:100%; padding:2rem 2rem 4rem; overflow-x:hidden; box-sizing:border-box; background:#F2F2E6; }
+
+h1 { font-size:1.6rem !important; font-weight:900 !important; color:#1A1A1A !important; letter-spacing:.01em !important; }
+h2 { font-size:1.2rem !important; font-weight:900 !important; color:#1A1A1A !important; border-bottom:2px solid #1A1A1A !important; padding-bottom:.4rem !important; }
+h3 { font-size:1.05rem !important; font-weight:900 !important; color:#1A1A1A !important; }
+h3 { position:relative !important; padding-left:16px !important; margin-top:8px !important; }
+h3::before { content:'' !important; position:absolute !important; left:0 !important; top:50% !important;
+    transform:translateY(-50%) !important; width:6px !important; height:18px !important;
+    background:#C8E64C !important; border-radius:1px !important; }
+.stCaption p { color:#777 !important; font-size:11px !important; letter-spacing:.08em; font-weight:700 !important; }
+[data-testid="stAppViewContainer"] p { line-height:1.7 !important; }
+
+[data-testid="stSidebar"] { background-color:#1A1A1A !important; border-right:none !important; }
+[data-testid="stSidebar"] * { font-family:'Noto Sans TC','Noto Sans JP',sans-serif !important; }
+[data-testid="stSidebar"] h1,[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3,[data-testid="stSidebar"] p { color:#999 !important; }
+[data-testid="stSidebar"] .stRadio > div { gap:0 !important; }
+[data-testid="stSidebar"] .stRadio label {
+    font-size:13px !important; color:#888 !important; padding:11px 14px !important; margin:0 !important;
+    border:none !important; border-left:3px solid transparent !important; border-radius:0 !important;
+    background:transparent !important; font-weight:700 !important;
+    transition:color .12s, border-color .12s, background .12s !important;
+}
+[data-testid="stSidebar"] .stRadio label:hover { color:#CCC !important; background:rgba(255,255,255,.05) !important; }
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    color:#C8E64C !important; border-left-color:#C8E64C !important; background:rgba(200,230,76,.08) !important;
+}
+[data-testid="stSidebar"] .stRadio label > div:first-child { display:none !important; }
+
+.stButton > button {
+    background-color:#FFFFFF !important; color:#1A1A1A !important;
+    border:2px solid #1A1A1A !important; border-radius:2px !important;
+    font-family:'Noto Sans TC','Noto Sans JP',sans-serif !important; font-weight:900 !important;
+    font-size:13px !important; padding:8px 20px !important;
+    transition:background .15s, color .15s !important;
+    white-space:normal !important; word-break:break-word !important; line-height:1.4 !important; min-height:40px !important;
+}
+.stButton > button:hover { background-color:#C8E64C !important; border-color:#C8E64C !important; color:#1A1A1A !important; }
+.stButton > button[kind="primary"],[data-testid="baseButton-primary"] {
+    background:#C8E64C !important; color:#1A1A1A !important; border:2px solid #A8C030 !important;
+}
+[data-testid="baseButton-primary"]:hover { background:#B8D630 !important; }
+
+input, textarea, select,
+[data-testid="stTextInput"] input,[data-testid="stTextArea"] textarea {
+    background:#FFFFFF !important; border:2px solid #1A1A1A !important; border-radius:2px !important;
+    color:#1A1A1A !important; font-family:'Noto Sans TC','Noto Sans JP',sans-serif !important;
+    font-size:13px !important; font-weight:700 !important;
+}
+input:focus,textarea:focus { border-color:#C8E64C !important; box-shadow:0 0 0 3px rgba(200,230,76,.25) !important; }
+
+[data-testid="metric-container"],[data-testid="stMetric"] {
+    background:#FFFFFF !important; border:2px solid #1A1A1A !important;
+    border-top:4px solid #C8E64C !important; border-radius:2px !important; padding:18px 20px !important;
+}
+[data-testid="stMetricValue"] { font-size:2rem !important; font-weight:900 !important; color:#1A1A1A !important; }
+[data-testid="stMetricLabel"] { font-size:11px !important; color:#777 !important; letter-spacing:.12em !important; font-weight:900 !important; }
+
+[data-testid="stExpander"] { border:2px solid #1A1A1A !important; border-radius:2px !important;
+    background:#FFFFFF !important; margin-bottom:10px !important; }
+[data-testid="stExpander"] summary { background:#FFFFFF !important; font-size:13px !important;
+    color:#1A1A1A !important; font-weight:900 !important; }
+[data-testid="stExpander"] summary:hover { color:#555 !important; }
+
+[data-testid="stTabs"] [role="tablist"] { border-bottom:2px solid #1A1A1A !important; gap:0 !important; }
+[data-testid="stTabs"] [data-baseweb="tab-highlight"],[data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display:none !important; height:0 !important; background:transparent !important;
+}
+[data-testid="stTabs"] button[role="tab"] {
+    font-size:12px !important; color:#888 !important; font-weight:900 !important;
+    padding:8px 20px !important; border-bottom:3px solid transparent !important;
+    background:transparent !important; border-radius:0 !important; letter-spacing:.08em !important;
+}
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] { color:#1A1A1A !important; border-bottom-color:#C8E64C !important; }
+
+[data-testid="stAlert"] { border-radius:2px !important; border-left-width:4px !important; font-size:13px !important; font-weight:700 !important; }
+.stSuccess { background:#F4FFD6 !important; border-color:#C8E64C !important; color:#3A5A00 !important; }
+.stInfo    { background:#F0F7FF !important; border-color:#5599DD !important; color:#1A3A6A !important; }
+.stWarning { background:#FFF8E0 !important; border-color:#F5C842 !important; color:#6A4A00 !important; }
+
+[data-testid="stProgress"] > div { background:#E0E0D0 !important; border-radius:2px !important; height:6px !important; overflow:hidden !important; }
+[data-testid="stProgress"] > div > div { background:#C8E64C !important; border-radius:2px !important; height:6px !important; }
+[data-testid="stProgress"] p { color:#777 !important; font-size:12px !important; font-weight:700 !important; }
+
+hr { border-color:#1A1A1A !important; border-width:1px 0 0 !important; }
+code { background:#C8E64C !important; color:#1A1A1A !important; font-size:.85em !important; padding:1px 6px !important; border-radius:2px !important; font-weight:900 !important; }
+
+[data-testid="stFileUploader"] { border:2px solid #1A1A1A !important; border-radius:2px !important; background:#FFFFFF !important; }
+[data-testid="stFileUploader"] section { background:#FFFFFF !important; border:2px dashed #888 !important; border-radius:2px !important; }
+[data-testid="stFileUploader"] button,[data-testid="stFileUploaderDropzone"] button {
+    background:#C8E64C !important; color:#1A1A1A !important; border:2px solid #A8C030 !important;
+    border-radius:2px !important; font-weight:900 !important; box-shadow:none !important;
+}
+
+[data-testid="stBottom"],[data-testid="stBottomBlockContainer"],[data-testid="stChatInput"] { background:#F2F2E6 !important; }
+[data-testid="stChatInput"] > div { background:#FFFFFF !important; border:2px solid #1A1A1A !important; border-radius:2px !important; }
+[data-testid="stChatInput"] textarea { background:#FFFFFF !important; color:#1A1A1A !important; font-weight:700 !important; }
+[data-testid="stChatInput"] button { background:#C8E64C !important; border-radius:2px !important; }
+
+[data-testid="stSelectbox"] > div > div {
+    background:#FFFFFF !important; border:2px solid #1A1A1A !important; border-radius:2px !important;
+    color:#1A1A1A !important; font-size:13px !important; font-weight:700 !important;
+}
+[data-testid="stToast"] { background:#1A1A1A !important; color:#C8E64C !important; border-radius:2px !important; font-size:13px !important; font-weight:900 !important; }
+
+@media (max-width:768px) {
+    .main .block-container { padding:.75rem .75rem 3rem !important; }
+    h1 { font-size:1.2rem !important; } h2 { font-size:1rem !important; } h3 { font-size:.95rem !important; }
+    [data-testid="column"] { overflow:hidden; min-width:0; }
+    code,pre { white-space:pre-wrap !important; word-break:break-word !important; }
+    [data-testid="stTabs"] button[role="tab"] { padding:7px 10px !important; font-size:11px !important; }
+    [data-testid="stMetricValue"] { font-size:1.6rem !important; }
+    .stButton > button { font-size:12px !important; padding:7px 12px !important; min-height:38px !important; }
+}
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-thumb { background:#888; border-radius:2px; }
+::-webkit-scrollbar-track { background:transparent; }
+[data-testid="collapsedControl"] button,[data-testid="stSidebarCollapsedControl"] button { font-size:0 !important; }
+[data-testid="collapsedControl"] button::after,[data-testid="stSidebarCollapsedControl"] button::after {
+    content:'☰' !important; font-size:22px !important; color:#C8E64C !important;
+}
+</style>
+"""
+
 # テーマに応じて CSS を注入
-_theme_css = {"animal": ANIMAL_CSS}.get(THEME, ZEN_CSS)
+_theme_css = {"animal": ANIMAL_CSS, "bold": BOLD_CSS}.get(THEME, ZEN_CSS)
 st.markdown(_theme_css, unsafe_allow_html=True)
 
 # ── サイドバー開閉ボタンの Material アイコン文字化け対策（全テーマ共通）──
@@ -1215,9 +1360,13 @@ elif page == "news":
 
                 # ニュース iframe のアクセント色をテーマに合わせる（① 最適化）
                 if THEME == "animal":
-                    _n_hl = "background:#F4C152; color:#6B5644;"   # hover ハイライト（蜂蜜地・茶文字）
-                    _n_txt = "#B0863A"                            # 白地の上のアクセント文字（キャラメル）
-                    _n_btn, _n_btn_h = "#C99A2E", "#B0863A"        # 保存ボタンの地色／hover
+                    _n_hl = "background:#F4C152; color:#6B5644;"
+                    _n_txt = "#B0863A"
+                    _n_btn, _n_btn_h = "#C99A2E", "#B0863A"
+                elif THEME == "bold":
+                    _n_hl = "background:#C8E64C; color:#1A1A1A;"
+                    _n_txt = "#A8C030"
+                    _n_btn, _n_btn_h = "#A8C030", "#8AAA20"
                 else:
                     _n_hl = "background:#4A7C59; color:#fff;"
                     _n_txt = "#4A7C59"
@@ -1838,7 +1987,8 @@ elif page == "today":  # noqa: E501
             # 発音ボタン（スタイルC・奶油描邊）— 単語カードの左上に配置。
             #   枠線/文字色はテーマのアクセントに合わせる。
             _acc = {"zen": ("#4A7C59", "#4A7C59"),
-                    "animal": ("#F4C152", "#B0863A")}.get(THEME, ("#4A7C59", "#4A7C59"))
+                    "animal": ("#F4C152", "#B0863A"),
+                    "bold": ("#C8E64C", "#A8C030")}.get(THEME, ("#4A7C59", "#4A7C59"))
             _wjs2 = word["word"].replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"')
             components.html(f"""
 <style>html,body{{margin:0;padding:0;}}
@@ -2006,6 +2156,8 @@ div[class*="st-key-vc_"] input[type="checkbox"] { width:18px !important; height:
         # ブランド配色（動物風はブランドガイドの暖色、その他は従来のグレー）
         if THEME == "animal":
             _vw, _vpb, _vpf, _vmut, _vsrc = "#6B5644", "#FCEFCF", "#B0863A", "#9C8B72", "#C9B79A"
+        elif THEME == "bold":
+            _vw, _vpb, _vpf, _vmut, _vsrc = "#1A1A1A", "#C8E64C", "#1A1A1A", "#555", "#888"
         else:
             _vw, _vpb, _vpf, _vmut, _vsrc = "#1A1A1A", "#EEE", "#999", "#888", "#CCC"
         import html as _html
@@ -2095,7 +2247,7 @@ elif page == "quiz":
     quiz_q = st.session_state.get("quiz_q")
     if quiz_q:
         # ── 題目卡片（中文句子）。上端アクセントはテーマ連動 ──
-        _q_acc = "#F4C152" if THEME == "animal" else "#4A7C59"
+        _q_acc = {"animal": "#F4C152", "bold": "#C8E64C"}.get(THEME, "#4A7C59")
         st.markdown(
             f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid {_q_acc};'
             f'border-radius:2px;padding:28px 24px;margin:12px 0;">'
