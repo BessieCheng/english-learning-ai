@@ -1694,7 +1694,7 @@ function stopit(){{ if(window.speechSynthesis) window.speechSynthesis.cancel(); 
     else:
         for n in saved_list:
             with st.expander(f"{n['title']}  ·  {n.get('date_str','')}"):
-                st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{(n.get('saved_at') or '')[:16]}")
+                st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{str(n.get('saved_at') or '')[:16]}")
                 # 🔊 音声導読（speechSynthesis で全文を朗読）
                 import json as _json_tts2
                 _tts_saved = _json_tts2.dumps(n.get("body", ""))
@@ -2137,7 +2137,7 @@ div[class*="st-key-del_vocab_"] button:hover {
     flex:0 0 28px !important; width:28px !important; min-width:0 !important;
 }
 [data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:nth-child(2) {
-    flex:1 1 auto !important; min-width:0 !important; overflow:hidden !important;
+    flex:1 1 auto !important; min-width:0 !important;
 }
 [data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:nth-child(3),
 [data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:nth-child(4) {
