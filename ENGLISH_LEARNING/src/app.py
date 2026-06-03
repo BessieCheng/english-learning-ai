@@ -169,6 +169,7 @@ LANG = {
     "up_h_vocab":    {"ja": "学んだ単語",       "zh": "學到的單字"},
     "up_example":    {"ja": "例文：",             "zh": "例句："},
     "up_h_pron":     {"ja": "発音のヒント",     "zh": "發音提示"},
+    "up_h_hesit":    {"ja": "つまずいた単語",   "zh": "猶豫的單字"},
     "up_pdf_btn":    {"ja": "レポートをPDFでダウンロード",
                       "zh": "下載 PDF 分析報告"},
 
@@ -1008,8 +1009,9 @@ if page == "upload":
                         diarized = _fallback(transcript)
 
                 # ── 話者分離結果を表示 ─────────────────────────
-                label_a = diarized.get("speaker_a_label", "Speaker A")
-                label_b = diarized.get("speaker_b_label", "Speaker B")
+                _lang = st.session_state.get("lang", "ja")
+                label_a = "話者A" if _lang == "ja" else "說話者A"
+                label_b = "話者B" if _lang == "ja" else "說話者B"
 
                 with st.expander(t("up_transcript"), expanded=True):
                     # 話者 A → 青, 話者 B → 緑 で色分け
@@ -1061,12 +1063,8 @@ if page == "upload":
                         spk = err.get("speaker", "A")
                         spk_label = label_a if spk == "A" else label_b
                         color = "#4a9eff" if spk == "A" else "#4caf82"
-                        header = (
-                            f'<span style="color:{color};font-size:12px">[{spk_label}]</span>  '
-                            f'❌ {err.get("original")}  →  ✅ {err.get("correction")}'
-                        )
                         with st.expander(f"[{spk_label}]  {err.get('original')}  →  {err.get('correction')}"):
-                            st.markdown(f'<span style="color:{color}">**{spk_label}**</span>', unsafe_allow_html=True)
+                            st.markdown(f'<span style="color:{color};font-size:12px">**{spk_label}**</span>', unsafe_allow_html=True)
                             st.write(err.get("explanation"))
                 else:
                     st.success(t("up_no_grammar"))
@@ -1092,6 +1090,19 @@ if page == "upload":
                                 st.write(tip.get("tip", ""))
                         else:
                             st.write(f"• {tip}")
+
+                # ── つまずいた単語 / 猶豫單字 ────────────────
+                hesitant = analysis.get("hesitant_words", [])
+                if hesitant:
+                    st.subheader(t("up_h_hesit"))
+                    for hw in hesitant:
+                        spk = hw.get("speaker", "A")
+                        spk_label = label_a if spk == "A" else label_b
+                        color = "#4a9eff" if spk == "A" else "#4caf82"
+                        pos_tag = f" `{hw.get('part_of_speech')}`" if hw.get('part_of_speech') else ""
+                        with st.expander(f"[{spk_label}]  {hw.get('word', '')}{pos_tag}　{hw.get('definition', '')}"):
+                            st.markdown(f'<span style="color:{color};font-size:12px">**{spk_label}**</span>', unsafe_allow_html=True)
+                            st.write(f"{t('up_example')}*{hw.get('example', '')}*")
 
                 # ── PDF ダウンロード ──────────────────────────
                 st.markdown("---")
