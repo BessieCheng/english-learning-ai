@@ -1,11 +1,5 @@
-# =============================================================
-# srs.py
-# 功能：實作 SM-2 間隔重複演算法（Spaced Repetition System）
-# =============================================================
-
-import psycopg2.extras
 from datetime import date, timedelta
-from database import get_connection, _cur
+from database import get_db, _cur
 
 QUALITY_MAP = {
     "忘れた / 忘記了":       0,
@@ -26,43 +20,35 @@ def calculate_next_review(interval_days, ease_factor, review_count, quality):
             new_interval = 6
         else:
             new_interval = round(interval_days * ease_factor)
-
         new_ease_factor = ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
         if new_ease_factor < 1.3:
             new_ease_factor = 1.3
-
     return new_interval, round(new_ease_factor, 2)
 
 
 def update_vocabulary_after_review(vocab_id, quality):
-    conn = get_connection()
-    cur = _cur(conn)
+    with get_db() as conn:
+        cur = _cur(conn)
+        cur.execute(
+            "SELECT interval_days, ease_factor, review_count FROM vocabulary WHERE id = %s",
+            (vocab_id,)
+        )
+        row = cur.fetchone()
+        if not row:
+            cur.close()
+            return
 
-    cur.execute(
-        "SELECT interval_days, ease_factor, review_count FROM vocabulary WHERE id = %s",
-        (vocab_id,)
-    )
-    row = cur.fetchone()
+        new_interval, new_ease = calculate_next_review(
+            row["interval_days"], row["ease_factor"], row["review_count"], quality
+        )
+        next_review_date = date.today() + timedelta(days=new_interval)
 
-    if not row:
+        cur.execute("""
+            UPDATE vocabulary
+            SET interval_days = %s,
+                ease_factor   = %s,
+                review_count  = review_count + 1,
+                next_review   = %s
+            WHERE id = %s
+        """, (new_interval, new_ease, next_review_date, vocab_id))
         cur.close()
-        conn.close()
-        return
-
-    new_interval, new_ease = calculate_next_review(
-        row["interval_days"], row["ease_factor"], row["review_count"], quality
-    )
-    next_review_date = (date.today() + timedelta(days=new_interval)).isoformat()
-
-    cur.execute("""
-        UPDATE vocabulary
-        SET interval_days = %s,
-            ease_factor   = %s,
-            review_count  = review_count + 1,
-            next_review   = %s
-        WHERE id = %s
-    """, (new_interval, new_ease, next_review_date, vocab_id))
-
-    conn.commit()
-    cur.close()
-    conn.close()

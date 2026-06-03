@@ -21,7 +21,14 @@ from database import (init_database, get_all_sessions, get_vocabulary_due_today,
                        delete_translation_quiz)
 
 load_dotenv(".env.local")
-init_database()
+
+@st.cache_resource
+def _init_db():
+    init_database()
+    return 
+    True
+
+_init_db()
 
 
 # ══════════════════════════════════════════════════════════════
@@ -258,6 +265,12 @@ LANG = {
     "today_del_exp": {"ja": "🗑 単語を削除",         "zh": "🗑 刪除單字"},
     "today_del_pick":{"ja": "削除する単語を選択",     "zh": "選擇要刪除的單字"},
     "today_del_btn": {"ja": "削除",                 "zh": "刪除"},
+    "today_select_all":     {"ja": "全選択",         "zh": "全選"},
+    "today_batch_delete":   {"ja": "選択を削除",     "zh": "刪除選取"},
+    "today_batch_confirm":  {"ja": " 個の単語を削除しますか？", "zh": " 個單字，確定刪除？"},
+    "today_batch_ok":       {"ja": "削除する",       "zh": "確認刪除"},
+    "today_batch_cancel":   {"ja": "キャンセル",     "zh": "取消"},
+    "today_batch_done":     {"ja": "削除しました",   "zh": "刪除完成"},
 }
 
 
@@ -1900,8 +1913,6 @@ elif page == "today":  # noqa: E501
 
         filtered = [v for v in all_vocab if search_q.lower() in v["word"].lower()] if search_q else all_vocab
 
-        # ── 重複単語を1行に統合（大文字小文字を無視）。来源ラベルは併記し、
-        #    削除時はその単語の全 id をまとめて消す。──
         merged = {}
         for v in filtered:
             key = v["word"].strip().lower()
@@ -1922,9 +1933,44 @@ elif page == "today":  # noqa: E501
                 m["example"] = m["example"] or v.get("example", "")
                 m["reference_title"] = m["reference_title"] or v.get("reference_title")
         merged_list = list(merged.values())
-        st.caption(f"{t('today_cnt1')}{len(merged_list)}{t('today_cnt2')}")
 
-        # 🎧 発音・－ 削除ボタンを 🔊 と同じ淡いグレー枠に揃える CSS
+        # ── 批次刪除控制列 ─────────────────────────────────────────
+        ctrl1, ctrl2, ctrl3 = st.columns([0.45, 0.27, 0.28])
+        with ctrl1:
+            st.caption(f"{t('today_cnt1')}{len(merged_list)}{t('today_cnt2')}")
+        with ctrl2:
+            if st.button(t("today_select_all"), use_container_width=True, key="vocab_sel_all"):
+                for m in merged_list:
+                    st.session_state[f"vc_{m['ids'][0]}"] = True
+                st.rerun()
+        with ctrl3:
+            n_sel = sum(1 for m in merged_list if st.session_state.get(f"vc_{m['ids'][0]}", False))
+            if n_sel > 0:
+                if st.button(f"🗑 {t('today_batch_delete')} ({n_sel})",
+                             use_container_width=True, type="primary", key="vocab_batch_del"):
+                    st.session_state["vocab_confirm"] = True
+
+        # 確認對話框
+        if st.session_state.get("vocab_confirm"):
+            n_sel = sum(1 for m in merged_list if st.session_state.get(f"vc_{m['ids'][0]}", False))
+            st.warning(f"**{n_sel}{t('today_batch_confirm')}**")
+            ok_col, cancel_col = st.columns(2)
+            with ok_col:
+                if st.button(t("today_batch_ok"), type="primary", use_container_width=True, key="vocab_batch_ok"):
+                    for m in merged_list:
+                        if st.session_state.get(f"vc_{m['ids'][0]}", False):
+                            for _id in m["ids"]:
+                                delete_vocabulary(int(_id))
+                            st.session_state.pop(f"vc_{m['ids'][0]}", None)
+                    st.session_state["vocab_confirm"] = False
+                    st.toast(t("today_batch_done"), icon="🗑️")
+                    st.rerun()
+            with cancel_col:
+                if st.button(t("today_batch_cancel"), use_container_width=True, key="vocab_batch_cancel"):
+                    st.session_state["vocab_confirm"] = False
+                    st.rerun()
+
+        # ── 單字清單 CSS ────────────────────────────────────────────
         st.markdown("""
 <style>
 div[class*="st-key-del_vocab_"] button {
@@ -1939,21 +1985,22 @@ div[class*="st-key-del_vocab_"] button {
 div[class*="st-key-del_vocab_"] button:hover {
     background:#F2E4E4 !important; border-color:#D9B8B8 !important; color:#A83A36 !important;
 }
-/* 単語行（発音 iframe を含む列）をスマホでも折り返さず横一列に保つ */
 [data-testid="stHorizontalBlock"]:has(iframe) {
     flex-wrap:nowrap !important; gap:6px !important; align-items:center !important;
 }
 [data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"] {
     min-width:0 !important; flex-shrink:1 !important;
 }
-/* 情報列以外（ボタン列）は縮ませない */
 [data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:not(:first-child) {
     flex:0 0 48px !important; width:48px !important;
 }
+div[class*="st-key-vc_"] { display:flex !important; align-items:center !important; justify-content:center !important; }
+div[class*="st-key-vc_"] label { display:none !important; }
+div[class*="st-key-vc_"] input[type="checkbox"] { width:18px !important; height:18px !important; cursor:pointer !important; }
 </style>
 """, unsafe_allow_html=True)
 
-        # ── 単語リスト（各行ネイティブ：情報 ｜ 🎧発音 ｜ －削除）──
+        # ── 単語リスト（チェックボックス ｜ 情報 ｜ 🎧発音 ｜ －削除）──
         #    iframe は sandbox で親フレームを操作できず削除が効かないため
         #    行ごとに Streamlit ネイティブで描画し、－ を 🎧 の隣に置く。
         # ブランド配色（動物風はブランドガイドの暖色、その他は従来のグレー）
@@ -1971,7 +2018,9 @@ div[class*="st-key-del_vocab_"] button:hover {
             src = "／".join(source_labels.get(s, "重要") for s in m["sources"])
             ref = m.get("reference_title")
             src_txt = f'{src}　{ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
-            c_info, c_spk, c_del = st.columns([0.80, 0.10, 0.10], vertical_alignment="center")
+            c_chk, c_info, c_spk, c_del = st.columns([0.07, 0.73, 0.10, 0.10], vertical_alignment="center")
+            with c_chk:
+                st.checkbox("", key=f"vc_{m['ids'][0]}", label_visibility="collapsed")
             with c_info:
                 st.markdown(
                     f'<div style="padding-top:3px;line-height:1.4;">'

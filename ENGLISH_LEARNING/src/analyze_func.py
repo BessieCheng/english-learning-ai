@@ -1,31 +1,8 @@
-# Gemini 分析的核心函式，供 app.py 和 pipeline.py 共用
 import os
-import json
-import re
-import time
-from google import genai
 from dotenv import load_dotenv
+from gemini_utils import call_gemini_json, MODELS
 
 load_dotenv(".env.local")
-
-MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
-
-
-def _extract_json(raw: str) -> dict:
-    """從 Gemini 回應中穩健地萃取 JSON，處理 markdown 包裝、前綴文字、trailing comma。"""
-    raw = raw.strip()
-    # 去除 ```json ... ``` 或 ``` ... ``` 包裝
-    raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
-    raw = re.sub(r"\n?```$", "", raw)
-    raw = raw.strip()
-    # 找第一個 { 到最後一個 } 的範圍
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        raw = raw[start:end + 1]
-    # 去除 trailing comma（Gemini 偶爾產生，不符合 JSON 規範）
-    raw = re.sub(r",(\s*[}\]])", r"\1", raw)
-    return json.loads(raw)
 
 
 def lookup_word(word):
@@ -33,7 +10,6 @@ def lookup_word(word):
     用 Gemini 查詢單字的詞性、中日文定義、例句。
     回傳 dict：part_of_speech, definition_zh, definition_jp, example
     """
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     prompt = f"""Look up the English word or phrase "{word}".
 Return ONLY a valid JSON object with no extra text:
 {{
@@ -42,36 +18,13 @@ Return ONLY a valid JSON object with no extra text:
   "definition_jp": "<Japanese definition, concise 2-8 characters>",
   "example": "<one natural English example sentence using this word>"
 }}"""
-
-    for model_name in MODELS:
-        for attempt in range(3):
-            try:
-                response = client.models.generate_content(model=model_name, contents=prompt)
-                raw = response.text.strip()
-                return _extract_json(raw)
-            except Exception as e:
-                err = str(e)
-                if "404" in err or "NOT_FOUND" in err:
-                    break
-                elif any(c in err for c in ["503", "UNAVAILABLE", "429"]):
-                    time.sleep(3 * (attempt + 1))
-                else:
-                    raise
-    raise RuntimeError("Gemini 查詢失敗，請稍後再試。")
+    return call_gemini_json(prompt)
 
 
 def analyze(transcript, diarized=None, reference_text=None):
     """
     呼叫 Gemini API，分析逐字稿並回傳 dict 格式的分析結果。
-
-    參數：
-        transcript → 原始逐字稿（字串）
-        diarized   → 話者分離結果（dict，可選）。若有提供，
-                     文法錯誤會標注是哪位說話者的錯誤。
     """
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-    # 話者分離結果があれば、ラベル付きのテキストを作成
     if diarized and diarized.get("segments"):
         label_a = diarized.get("speaker_a_label", "Speaker A")
         label_b = diarized.get("speaker_b_label", "Speaker B")
@@ -99,7 +52,7 @@ def analyze(transcript, diarized=None, reference_text=None):
 The speakers were reading the following article aloud. Compare their speech against this original text to identify specific words they mispronounced, skipped, added, or struggled with. Prioritize errors that deviate from the article.
 
 Original article:
-\"\"\"{reference_text}\"\"\"
+\"\"\"{reference_text[:3000]}\"\"\"
 """
 
     prompt = f"""You are an English pronunciation coach specializing in helping Japanese and Taiwanese learners of English.
@@ -163,29 +116,4 @@ The JSON must follow this exact structure:
 Transcript:
 \"\"\"{transcript_for_analysis}\"\"\"
 """
-
-    raw = None
-    for model_name in MODELS:
-        for attempt in range(3):
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt
-                )
-                raw = response.text.strip()
-                break
-            except Exception as e:
-                err_str = str(e)
-                if any(code in err_str for code in ["404", "NOT_FOUND"]):
-                    break  # 此模型不可用，直接跳下一個
-                elif any(code in err_str for code in ["503", "UNAVAILABLE", "429"]):
-                    time.sleep(3 * (attempt + 1))
-                else:
-                    raise
-        if raw:
-            break
-
-    if not raw:
-        raise RuntimeError("Gemini が全モデルで失敗しました。しばらく待ってから再試行してください。")
-
-    return _extract_json(raw)
+    return call_gemini_json(prompt)
