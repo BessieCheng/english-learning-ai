@@ -8,6 +8,7 @@
 
 import os
 import json
+import re
 import time
 from google import genai
 from dotenv import load_dotenv
@@ -32,13 +33,13 @@ def _call_gemini_json(prompt):
             try:
                 response = client.models.generate_content(model=model_name, contents=prompt)
                 raw = response.text.strip()
-                if raw.startswith("```"):
-                    raw = "\n".join(raw.split("\n")[1:-1])
-                # 只取第一個 { ... } JSON 物件，避免尾部雜訊
+                raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
+                raw = re.sub(r"\n?```$", "", raw).strip()
                 start = raw.find("{")
-                end = raw.rfind("}") + 1
+                end = raw.rfind("}")
                 if start != -1 and end > start:
-                    raw = raw[start:end]
+                    raw = raw[start:end + 1]
+                raw = re.sub(r",(\s*[}\]])", r"\1", raw)
                 return json.loads(raw)
             except Exception as e:
                 last_err = e
@@ -107,9 +108,9 @@ Return ONLY a valid JSON object with no extra text:
   "correct": "<one recommended natural English translation>",
   "score": <integer 0-100>,
   "errors": [
-    {{"wrong": "<the learner's problematic part>", "right": "<corrected version>", "note": "<short explanation in Traditional Chinese>"}}
+    {{"wrong": "<the learner's problematic part>", "right": "<corrected version>", "note": "<short explanation in BOTH Japanese AND Traditional Chinese, format: 'Japanese説明。/ 中文說明。'>"}}
   ],
-  "feedback": "<one or two sentences of overall feedback in Traditional Chinese>"
+  "feedback": "<one or two sentences of overall feedback in BOTH Japanese AND Traditional Chinese, format: 'Japanese講評。/ 中文講評。'>"
 }}
 If the translation is already perfect, return an empty "errors" array and a high score."""
     result = _call_gemini_json(prompt)
