@@ -2085,15 +2085,10 @@ elif page == "today":  # noqa: E501
         merged_list = list(merged.values())
 
         # ── 批次刪除控制列 ─────────────────────────────────────────
-        ctrl1, ctrl2, ctrl3 = st.columns([0.45, 0.27, 0.28])
+        ctrl1, ctrl2 = st.columns([0.6, 0.4])
         with ctrl1:
             st.caption(f"{t('today_cnt1')}{len(merged_list)}{t('today_cnt2')}")
         with ctrl2:
-            if st.button(t("today_select_all"), use_container_width=True, key="vocab_sel_all"):
-                for m in merged_list:
-                    st.session_state[f"vc_{m['ids'][0]}"] = True
-                st.rerun()
-        with ctrl3:
             n_sel = sum(1 for m in merged_list if st.session_state.get(f"vc_{m['ids'][0]}", False))
             if n_sel > 0:
                 if st.button(f"🗑 {t('today_batch_delete')} ({n_sel})",
