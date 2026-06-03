@@ -12,21 +12,20 @@ MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
 
 
 def _extract_json(raw: str) -> dict:
-    """從 Gemini 回應中穩健地萃取 JSON，處理 markdown code block 或前綴說明文字。"""
+    """從 Gemini 回應中穩健地萃取 JSON，處理 markdown 包裝、前綴文字、trailing comma。"""
     raw = raw.strip()
     # 去除 ```json ... ``` 或 ``` ... ``` 包裝
     raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
     raw = re.sub(r"\n?```$", "", raw)
     raw = raw.strip()
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        # 找第一個 { 到最後一個 } 的範圍
-        start = raw.find("{")
-        end = raw.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            return json.loads(raw[start:end + 1])
-        raise
+    # 找第一個 { 到最後一個 } 的範圍
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        raw = raw[start:end + 1]
+    # 去除 trailing comma（Gemini 偶爾產生，不符合 JSON 規範）
+    raw = re.sub(r",(\s*[}\]])", r"\1", raw)
+    return json.loads(raw)
 
 
 def lookup_word(word):

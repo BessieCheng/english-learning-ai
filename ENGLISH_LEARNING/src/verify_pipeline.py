@@ -7,8 +7,12 @@ verify_pipeline.py
 
 import sys
 import os
-import tempfile
 import traceback
+from dotenv import load_dotenv
+
+# 確保不管從哪裡執行，都能找到 .env.local
+_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(_root, ".env.local"))
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -67,33 +71,26 @@ MOCK_DIARIZED = {
 def test_database():
     import database
 
-    orig_path = database.DB_PATH
-    database.DB_PATH = tempfile.mktemp(suffix=".db")
-    try:
-        database.init_database()
+    database.init_database()
 
-        session_id = database.save_session(
-            "test.mp3", "I go to store yesterday.",
-            MOCK_ANALYSIS, diarized=MOCK_DIARIZED
-        )
-        assert isinstance(session_id, int) and session_id > 0
+    session_id = database.save_session(
+        "verify_test.mp3", "I go to store yesterday.",
+        MOCK_ANALYSIS, diarized=MOCK_DIARIZED
+    )
+    assert isinstance(session_id, int) and session_id > 0
 
-        sessions = database.get_all_sessions()
-        assert any(s["id"] == session_id for s in sessions), "session 未找到"
+    sessions = database.get_all_sessions()
+    assert any(s["id"] == session_id for s in sessions), "session 未找到"
 
-        vocab = database.get_all_vocabulary()
-        words = [v["word"] for v in vocab]
-        assert "purchase" in words, "vocabulary_highlights 未存入"
-        assert "although" in words, "hesitant_words 未存入"
+    vocab = database.get_all_vocabulary()
+    words = [v["word"] for v in vocab]
+    assert "purchase" in words, "vocabulary_highlights 未存入"
+    assert "although" in words, "hesitant_words 未存入"
 
-        database.delete_session(session_id)
-        assert not any(s["id"] == session_id for s in database.get_all_sessions()), "刪除失敗"
+    database.delete_session(session_id)
+    assert not any(s["id"] == session_id for s in database.get_all_sessions()), "刪除失敗"
 
-        print("  → init / save / query / hesitant_words / delete: OK")
-    finally:
-        if os.path.exists(database.DB_PATH):
-            os.unlink(database.DB_PATH)
-        database.DB_PATH = orig_path
+    print("  → init / save / query / hesitant_words / delete: OK")
 
 
 # ── 2. PDF 生成 ──────────────────────────────────────────────────
