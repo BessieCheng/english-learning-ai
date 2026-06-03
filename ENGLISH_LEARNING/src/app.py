@@ -317,7 +317,7 @@ elif THEME == "bold":
     st.markdown(
         '<div style="padding:6px 0 20px;margin-bottom:24px;">'
         '<div style="font-size:10px;font-weight:900;letter-spacing:.3em;color:#888;margin-bottom:6px;">ENGLISH LEARNING AI</div>'
-        '<div style="font-size:30px;font-weight:900;color:#1A1A1A;line-height:1.2;">'
+        '<div style="font-size:20px;font-weight:900;color:#1A1A1A;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
         f'<span style="background:#C8E64C;padding:0 6px;">{t("title_main")}</span></div>'
         '<div style="font-size:13px;font-weight:700;color:#555;letter-spacing:.05em;margin-top:10px;">'
         f'{t("title_sub")}</div>'
@@ -847,9 +847,9 @@ input:focus, textarea:focus { border-color:#F4C152 !important; box-shadow:0 0 0 
 .stWarning { background:#FDEFE0 !important; color:#B5742A !important; }
 
 /* progress */
-[data-testid="stProgress"] > div { background:#FBEAC6 !important; border-radius:10px !important; height:8px !important; overflow:hidden !important; }
-[data-testid="stProgress"] > div > div { background:linear-gradient(90deg,#F8CE63,#E8AE3A) !important; border-radius:10px !important; height:8px !important; }
-[data-testid="stProgress"] p { color:#B6A088 !important; font-size:12px !important; }
+[data-testid="stProgress"] > div > div { background:#FBEAC6 !important; border-radius:10px !important; height:8px !important; overflow:hidden !important; }
+[data-testid="stProgress"] > div > div > div { background:linear-gradient(90deg,#F8CE63,#E8AE3A) !important; border-radius:10px !important; height:8px !important; }
+[data-testid="stProgress"] p, [data-testid="stProgress"] small { color:#B6A088 !important; font-size:12px !important; }
 
 hr { border-color:#F0E4CE !important; border-width:1px 0 0 !important; }
 code { background:#FCEFCF !important; color:#B0863A !important; font-size:.85em !important; padding:1px 7px !important; border-radius:8px !important; }
@@ -988,9 +988,9 @@ input:focus,textarea:focus { border-color:#C8E64C !important; box-shadow:0 0 0 3
 .stInfo    { background:#F0F7FF !important; border-color:#5599DD !important; color:#1A3A6A !important; }
 .stWarning { background:#FFF8E0 !important; border-color:#F5C842 !important; color:#6A4A00 !important; }
 
-[data-testid="stProgress"] > div { background:#E0E0D0 !important; border-radius:2px !important; height:6px !important; overflow:hidden !important; }
-[data-testid="stProgress"] > div > div { background:#C8E64C !important; border-radius:2px !important; height:6px !important; }
-[data-testid="stProgress"] p { color:#777 !important; font-size:12px !important; font-weight:700 !important; }
+[data-testid="stProgress"] > div > div { background:#E0E0D0 !important; border-radius:2px !important; height:6px !important; overflow:hidden !important; }
+[data-testid="stProgress"] > div > div > div { background:#C8E64C !important; border-radius:2px !important; height:6px !important; }
+[data-testid="stProgress"] p, [data-testid="stProgress"] small { color:#777 !important; font-size:12px !important; font-weight:700 !important; }
 
 hr { border-color:#1A1A1A !important; border-width:1px 0 0 !important; }
 code { background:#C8E64C !important; color:#1A1A1A !important; font-size:.85em !important; padding:1px 6px !important; border-radius:2px !important; font-weight:900 !important; }
@@ -1694,7 +1694,7 @@ function stopit(){{ if(window.speechSynthesis) window.speechSynthesis.cancel(); 
     else:
         for n in saved_list:
             with st.expander(f"{n['title']}  ·  {n.get('date_str','')}"):
-                st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{n.get('saved_at','')[:16]}")
+                st.caption(f"{t('news_source')}{n.get('source','')}　｜　{t('news_saved_at')}{(n.get('saved_at') or '')[:16]}")
                 # 🔊 音声導読（speechSynthesis で全文を朗読）
                 import json as _json_tts2
                 _tts_saved = _json_tts2.dumps(n.get("body", ""))
@@ -2138,11 +2138,15 @@ div[class*="st-key-del_vocab_"] button:hover {
 [data-testid="stHorizontalBlock"]:has(iframe) {
     flex-wrap:nowrap !important; gap:6px !important; align-items:center !important;
 }
-[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"] {
-    min-width:0 !important; flex-shrink:1 !important;
+[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:first-child {
+    flex:0 0 28px !important; width:28px !important; min-width:0 !important;
 }
-[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:not(:first-child) {
-    flex:0 0 48px !important; width:48px !important;
+[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:nth-child(2) {
+    flex:1 1 auto !important; min-width:0 !important; overflow:hidden !important;
+}
+[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:nth-child(3),
+[data-testid="stHorizontalBlock"]:has(iframe) [data-testid="stColumn"]:nth-child(4) {
+    flex:0 0 48px !important; width:48px !important; min-width:0 !important;
 }
 div[class*="st-key-vc_"] { display:flex !important; align-items:center !important; justify-content:center !important; }
 div[class*="st-key-vc_"] label { display:none !important; }
