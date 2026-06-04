@@ -278,6 +278,15 @@ LANG = {
 def t(key):
     return LANG.get(key, {}).get(st.session_state["lang"], key)
 
+def _one_lang(text):
+    """'Japanese / Chinese' 雙語字串 → 依介面語言只取一邊。"""
+    if not text:
+        return ""
+    if " / " in text:
+        parts = text.split(" / ", 1)
+        return parts[0].strip() if st.session_state.get("lang", "ja") == "ja" else parts[1].strip()
+    return text
+
 
 # ══════════════════════════════════════════════════════════════
 # テーマ切換（zen = 禅・無印 / pastel = 粉彩健康風）
@@ -1875,10 +1884,10 @@ elif page == "history":
                             f'<div style="border-left:2px solid #E0E0E0;padding:2px 10px;margin:4px 0;">'
                             f'<span style="color:#B05050;text-decoration:line-through;">{_e.get("wrong","")}</span>　→　'
                             f'<span style="color:#4A7C59;">{_e.get("right","")}</span><br>'
-                            f'<span style="font-size:12px;color:#999;">{_e.get("note","")}</span></div>',
+                            f'<span style="font-size:12px;color:#999;">{_one_lang(_e.get("note",""))}</span></div>',
                             unsafe_allow_html=True)
                     if _fb.get("feedback"):
-                        st.info(f'{t("quiz_feedback")}：{_fb["feedback"]}')
+                        st.info(f'{t("quiz_feedback")}：{_one_lang(_fb["feedback"])}')
                     if st.button(t("hist_delete"), key=f"del_quiz_{q['id']}", use_container_width=True):
                         delete_translation_quiz(q["id"])
                         st.rerun()
@@ -2027,11 +2036,15 @@ elif page == "today":  # noqa: E501
                     st.rerun()
 
             else:
-                st.info(f"**{t('today_meaning')}** {word['definition']}")
-                st.write(f"**{t('today_ex_label')}** *{word['example']}*")
+                st.info(f"**{t('today_meaning')}** {_one_lang(word['definition'] or '')}")
+                st.write(f"**{t('today_ex_label')}** *{word['example'] or ''}*")
 
                 st.markdown(f"**{t('today_how_much')}**")
-                items = list(QUALITY_MAP.items())
+                _li = 0 if st.session_state.get("lang", "ja") == "ja" else 1
+                items = [
+                    (k.split(" / ")[_li].strip() if " / " in k else k, v)
+                    for k, v in QUALITY_MAP.items()
+                ]
                 row1_cols = st.columns(2)
                 row2_cols = st.columns(2)
                 all_cols = row1_cols + row2_cols
@@ -2196,7 +2209,7 @@ div[class*="st-key-vc_"] input[type="checkbox"] { width:18px !important; height:
             pos_html = (f'<span style="font-size:11px;background:{_vpb};color:{_vpf};'
                         f'padding:1px 7px;border-radius:3px;margin-left:4px;">'
                         f'{_html.escape(pos)}</span>' if pos else "")
-            desc = m.get("definition") or ""
+            desc = _one_lang(m.get("definition") or "")
             src = "／".join(source_labels.get(s, "重要") for s in m["sources"])
             ref = m.get("reference_title")
             src_txt = f'{src}　{ref[:16]}{"…" if ref and len(ref) > 16 else ""}' if ref else src
@@ -2260,7 +2273,8 @@ elif page == "quiz":
         st.session_state["quiz_nonce"] = 0
 
     def _new_question(lvl):
-        st.session_state["quiz_q"] = generate_quiz(lvl)
+        _cur_lang = st.session_state.get("lang", "zh")
+        st.session_state["quiz_q"] = generate_quiz(lvl, lang=_cur_lang)
         st.session_state["quiz_q_level"] = lvl
         st.session_state.pop("quiz_result", None)
         st.session_state.pop("quiz_user_answer", None)
@@ -2276,7 +2290,8 @@ elif page == "quiz":
 
     quiz_q = st.session_state.get("quiz_q")
     if quiz_q:
-        # ── 題目卡片（中文句子）。上端アクセントはテーマ連動 ──
+        _quiz_text = quiz_q.get("text") or quiz_q.get("zh", "")
+        # ── 題目卡片。上端アクセントはテーマ連動 ──
         _q_acc = {"animal": "#F4C152", "bold": "#C8E64C"}.get(THEME, "#4A7C59")
         st.markdown(
             f'<div style="background:#FFF;border:1px solid #E8E8E8;border-top:2px solid {_q_acc};'
@@ -2284,7 +2299,7 @@ elif page == "quiz":
             f'<div style="font-size:11px;letter-spacing:.2em;color:#CCC;margin-bottom:12px;">'
             f'{t("quiz_question")}</div>'
             f'<div style="font-size:clamp(18px,5vw,24px);font-weight:400;color:#1A1A1A;line-height:1.7;">'
-            f'{quiz_q["zh"]}</div></div>',
+            f'{_quiz_text}</div></div>',
             unsafe_allow_html=True
         )
 
@@ -2299,14 +2314,14 @@ elif page == "quiz":
             else:
                 with st.spinner(t("quiz_grading")):
                     try:
-                        result = grade_translation(quiz_q["zh"], user_en.strip(),
+                        result = grade_translation(_quiz_text, user_en.strip(),
                                                    st.session_state.get("quiz_q_level", level_key))
                         st.session_state["quiz_result"] = result
                         st.session_state["quiz_user_answer"] = user_en.strip()
                         # 存履歷
                         save_translation_quiz(
                             st.session_state.get("quiz_q_level", level_key),
-                            quiz_q["zh"], user_en.strip(),
+                            _quiz_text, user_en.strip(),
                             result.get("correct", ""), result.get("score", 0),
                             json.dumps(result, ensure_ascii=False)
                         )
@@ -2355,12 +2370,12 @@ elif page == "quiz":
                         f'<div style="border-left:2px solid #E0E0E0;padding:4px 12px;margin:6px 0;">'
                         f'<span style="color:#B05050;text-decoration:line-through;">{err.get("wrong","")}</span>'
                         f'　→　<span style="color:#4A7C59;font-weight:500;">{err.get("right","")}</span><br>'
-                        f'<span style="font-size:12px;color:#999;">{err.get("note","")}</span></div>',
+                        f'<span style="font-size:12px;color:#999;">{_one_lang(err.get("note",""))}</span></div>',
                         unsafe_allow_html=True
                     )
             # 講評
             if result.get("feedback"):
-                st.info(f'{t("quiz_feedback")}：{result["feedback"]}')
+                st.info(f'{t("quiz_feedback")}：{_one_lang(result["feedback"])}')
 
             # 下一題
             if st.button(t("quiz_next"), use_container_width=True, key="quiz_next_btn"):

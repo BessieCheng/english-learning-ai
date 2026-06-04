@@ -2,27 +2,40 @@ from news_search import TOEIC_LEVELS
 from gemini_utils import call_gemini_json
 
 
-def generate_quiz(toeic_level_key):
-    """依多益程度，AI 生成一個適合翻成英文的中文句子。回傳 dict：{"zh": "..."}"""
+def generate_quiz(toeic_level_key, lang="zh"):
+    """依多益程度，AI 生成一個適合翻成英文的句子。
+    lang='zh' → 繁體中文題；lang='ja' → 日文題。
+    回傳 dict：{"text": "...", "lang": lang}
+    """
     cefr, style = TOEIC_LEVELS.get(toeic_level_key, ("B1-B2", "standard sentences"))
+    if lang == "ja":
+        lang_instruction = "Generate ONE natural Japanese sentence (日本語) for the learner to translate INTO English."
+        lang_req = "- Output in Japanese (日本語). A single sentence, 15-40 characters."
+        json_key = "ja"
+    else:
+        lang_instruction = "Generate ONE natural Traditional Chinese sentence for the learner to translate INTO English."
+        lang_req = "- Output Traditional Chinese (Taiwan), not Simplified. 8-20 Chinese characters."
+        json_key = "zh"
+
     prompt = f"""You are an English teacher creating a translation exercise.
 The learner's level is CEFR {cefr} (target style: {style}).
 
-Generate ONE natural Traditional Chinese sentence for the learner to translate INTO English.
+{lang_instruction}
 Requirements:
 - Difficulty must match {cefr}: vocabulary and grammar appropriate for that level.
-- A single, self-contained sentence (not too long, 8-20 Chinese characters is ideal).
+- A single, self-contained sentence (not too long).
 - Everyday or practical topic; avoid obscure idioms or proper nouns.
-- Output Traditional Chinese (Taiwan), not Simplified.
+- {lang_req}
 
 Return ONLY a valid JSON object with no extra text:
 {{
-  "zh": "<the Traditional Chinese sentence>"
+  "{json_key}": "<the sentence>"
 }}"""
     result = call_gemini_json(prompt)
-    if not result.get("zh"):
+    sentence = result.get(json_key, "")
+    if not sentence:
         raise RuntimeError("出題失敗：未取得題目。")
-    return {"zh": result["zh"].strip()}
+    return {"text": sentence.strip(), "lang": lang, "zh": sentence.strip() if lang == "zh" else "", "ja": sentence.strip() if lang == "ja" else ""}
 
 
 def grade_translation(source_zh, user_en, toeic_level_key):
