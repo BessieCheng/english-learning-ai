@@ -1863,9 +1863,14 @@ elif page == "history":
             for q in quizzes:
                 _sc = q.get("score", 0)
                 with st.expander(f"{q['created_at']}　｜　{q.get('toeic_level','')}　｜　{t('quiz_score')} {_sc}/100"):
+                    _src_raw = q.get("source_zh", "")
+                    _src_parts = _src_raw.split(" / ", 1) if " / " in _src_raw else [_src_raw, ""]
+                    _src_main = _src_parts[0].strip()
+                    _src_sub  = _src_parts[1].strip() if len(_src_parts) > 1 else ""
                     st.markdown(
                         f'<div style="font-size:11px;letter-spacing:.1em;color:#CCC;">{t("quiz_question")}</div>'
-                        f'<div style="font-size:16px;color:#1A1A1A;margin:4px 0 12px;">{q.get("source_zh","")}</div>',
+                        f'<div style="font-size:16px;color:#1A1A1A;margin:4px 0 6px;">{_src_main}</div>'
+                        + (f'<div style="font-size:13px;color:#888;margin-bottom:12px;">{_src_sub}</div>' if _src_sub else '<div style="margin-bottom:12px;"></div>'),
                         unsafe_allow_html=True)
                     _c1, _c2 = st.columns(2)
                     with _c1:
@@ -2328,10 +2333,13 @@ elif page == "quiz":
                                                    st.session_state.get("quiz_q_level", level_key))
                         st.session_state["quiz_result"] = result
                         st.session_state["quiz_user_answer"] = user_en.strip()
-                        # 存履歷
+                        # 存履歷（source_zh 存「中文 / 日文」兩語言，方便履歷顯示）
+                        _qzh = quiz_q.get("zh", _quiz_text)
+                        _qja = quiz_q.get("ja", "")
+                        _source_both = f"{_qzh} / {_qja}" if _qja else _qzh
                         save_translation_quiz(
                             st.session_state.get("quiz_q_level", level_key),
-                            _quiz_text, user_en.strip(),
+                            _source_both, user_en.strip(),
                             result.get("correct", ""), result.get("score", 0),
                             json.dumps(result, ensure_ascii=False)
                         )

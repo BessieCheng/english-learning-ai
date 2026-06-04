@@ -1,43 +1,41 @@
 from news_search import TOEIC_LEVELS
 from gemini_utils import call_gemini_json
 
-_VERSION = "2"  # bump to force Streamlit Cloud recompile
+_VERSION = "3"
 
 
 def generate_quiz(toeic_level_key, lang="zh"):
-    """依多益程度，AI 生成一個適合翻成英文的句子。
-    lang='zh' → 繁體中文題；lang='ja' → 日文題。
-    回傳 dict：{"text": "...", "lang": lang}
+    """依多益程度，AI 生成一個適合翻成英文的句子，並同時附上另一語言的對照翻譯。
+    lang='zh' → 主題為繁體中文，附日文對照；lang='ja' → 主題為日文，附中文對照。
+    回傳 dict：{"text": str, "lang": str, "zh": str, "ja": str}
     """
     cefr, style = TOEIC_LEVELS.get(toeic_level_key, ("B1-B2", "standard sentences"))
-    if lang == "ja":
-        lang_instruction = "Generate ONE natural Japanese sentence (日本語) for the learner to translate INTO English."
-        lang_req = "- Output in Japanese (日本語). A single sentence, 15-40 characters."
-        json_key = "ja"
-    else:
-        lang_instruction = "Generate ONE natural Traditional Chinese sentence for the learner to translate INTO English."
-        lang_req = "- Output Traditional Chinese (Taiwan), not Simplified. 8-20 Chinese characters."
-        json_key = "zh"
 
     prompt = f"""You are an English teacher creating a translation exercise.
 The learner's level is CEFR {cefr} (target style: {style}).
 
-{lang_instruction}
+Generate ONE natural sentence for the learner to translate INTO English.
+The PRIMARY language is {"Traditional Chinese (繁體中文)" if lang == "zh" else "Japanese (日本語)"}.
+Also provide the translation of that sentence in the other language.
+
 Requirements:
-- Difficulty must match {cefr}: vocabulary and grammar appropriate for that level.
-- A single, self-contained sentence (not too long).
-- Everyday or practical topic; avoid obscure idioms or proper nouns.
-- {lang_req}
+- Difficulty matches CEFR {cefr}.
+- A single, self-contained sentence. Everyday or practical topic.
+- Traditional Chinese: 8-20 characters (Taiwan style, not Simplified).
+- Japanese: 15-40 characters.
 
 Return ONLY a valid JSON object with no extra text:
 {{
-  "{json_key}": "<the sentence>"
+  "zh": "<Traditional Chinese sentence>",
+  "ja": "<Japanese sentence (same meaning)>"
 }}"""
     result = call_gemini_json(prompt)
-    sentence = result.get(json_key, "")
-    if not sentence:
+    zh = (result.get("zh") or "").strip()
+    ja = (result.get("ja") or "").strip()
+    if not zh or not ja:
         raise RuntimeError("出題失敗：未取得題目。")
-    return {"text": sentence.strip(), "lang": lang, "zh": sentence.strip() if lang == "zh" else "", "ja": sentence.strip() if lang == "ja" else ""}
+    text = zh if lang == "zh" else ja
+    return {"text": text, "lang": lang, "zh": zh, "ja": ja}
 
 
 def grade_translation(source_zh, user_en, toeic_level_key):
