@@ -53,23 +53,28 @@ Learner's English translation:
 Grade it. Consider grammar, word choice, naturalness, and whether the meaning matches.
 Be encouraging but precise. Give the corrections a learner at {cefr} can understand.
 
-IMPORTANT language rules for the JSON values:
-- "note" and "feedback" MUST be written in TWO languages separated by " / "
-- FIRST part: Japanese (日本語) — write in Japanese script (hiragana/katakana/kanji), NOT English
-- SECOND part: Traditional Chinese (繁體中文) — write in Chinese, NOT English
-- Format strictly: '<Japanese text>。/ <Chinese text>。'
-- Example note: "「recent」を名詞の前に置く方が自然です。/ 將形容詞「recent」放在名詞前面會更自然。"
+CRITICAL LANGUAGE RULE — you MUST follow this exactly:
+Every "note" and "feedback" value MUST contain TWO parts joined by " / ":
+  Part 1: Japanese (日本語) only — use hiragana/katakana/kanji, absolutely no English
+  Part 2: Traditional Chinese (繁體中文) only — use Chinese characters, absolutely no English
+
+Format: "Japanese sentence here。/ 中文句子在這裡。"
+Example note: "「recent」を名詞の前に置く方が自然です。/ 將形容詞「recent」放在名詞前面會更自然。"
+Example feedback: "全体的に意味は伝わりますが改善できます。/ 整體意思有傳達，但仍有改進空間。"
+
+DO NOT write feedback or notes in English. DO NOT omit the Chinese part.
+Both parts are required — incomplete responses will be rejected.
 
 Return ONLY a valid JSON object with no extra text:
 {{
   "correct": "<one recommended natural English translation>",
   "score": <integer 0-100>,
   "errors": [
-    {{"wrong": "<the learner's problematic part>", "right": "<corrected version>", "note": "<Japanese explanation>。/ <Chinese explanation>。"}}
+    {{"wrong": "<learner's error>", "right": "<correction>", "note": "<Japanese>。/ <Chinese>。"}}
   ],
-  "feedback": "<Japanese overall feedback>。/ <Chinese overall feedback>。"
+  "feedback": "<Japanese overall comment>。/ <Chinese overall comment>。"
 }}
-If the translation is already perfect, return an empty "errors" array and a high score."""
+If the translation is perfect, return empty "errors" and high score."""
     result = call_gemini_json(prompt)
     result.setdefault("correct", "")
     result.setdefault("score", 0)
