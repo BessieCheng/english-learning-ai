@@ -1880,14 +1880,24 @@ elif page == "history":
                     except Exception:
                         _fb = {}
                     for _e in _fb.get("errors", []):
+                        _note = _e.get("note", "")
+                        # 履歷顯示兩種語言：先主語言，再另一語言（灰色小字）
+                        _note_parts = _note.split(" / ", 1) if " / " in _note else [_note, ""]
+                        _note_main = _note_parts[0].strip()
+                        _note_sub  = _note_parts[1].strip() if len(_note_parts) > 1 else ""
                         st.markdown(
                             f'<div style="border-left:2px solid #E0E0E0;padding:2px 10px;margin:4px 0;">'
                             f'<span style="color:#B05050;text-decoration:line-through;">{_e.get("wrong","")}</span>　→　'
                             f'<span style="color:#4A7C59;">{_e.get("right","")}</span><br>'
-                            f'<span style="font-size:12px;color:#999;">{_one_lang(_e.get("note",""))}</span></div>',
+                            f'<span style="font-size:12px;color:#666;">{_note_main}</span>'
+                            + (f'<br><span style="font-size:11px;color:#AAA;">{_note_sub}</span>' if _note_sub else "")
+                            + '</div>',
                             unsafe_allow_html=True)
                     if _fb.get("feedback"):
-                        st.info(f'{t("quiz_feedback")}：{_one_lang(_fb["feedback"])}')
+                        _fb_parts = _fb["feedback"].split(" / ", 1) if " / " in _fb["feedback"] else [_fb["feedback"], ""]
+                        _fb_main = _fb_parts[0].strip()
+                        _fb_sub  = _fb_parts[1].strip() if len(_fb_parts) > 1 else ""
+                        st.info(f'{t("quiz_feedback")}：{_fb_main}' + (f'\n\n{_fb_sub}' if _fb_sub else ""))
                     if st.button(t("hist_delete"), key=f"del_quiz_{q['id']}", use_container_width=True):
                         delete_translation_quiz(q["id"])
                         st.rerun()
