@@ -1,6 +1,8 @@
 from news_search import TOEIC_LEVELS
 from gemini_utils import call_gemini_json
 
+_VERSION = "2"  # bump to force Streamlit Cloud recompile
+
 
 def generate_quiz(toeic_level_key, lang="zh"):
     """依多益程度，AI 生成一個適合翻成英文的句子。
