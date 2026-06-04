@@ -53,14 +53,21 @@ Learner's English translation:
 Grade it. Consider grammar, word choice, naturalness, and whether the meaning matches.
 Be encouraging but precise. Give the corrections a learner at {cefr} can understand.
 
+IMPORTANT language rules for the JSON values:
+- "note" and "feedback" MUST be written in TWO languages separated by " / "
+- FIRST part: Japanese (日本語) — write in Japanese script (hiragana/katakana/kanji), NOT English
+- SECOND part: Traditional Chinese (繁體中文) — write in Chinese, NOT English
+- Format strictly: '<Japanese text>。/ <Chinese text>。'
+- Example note: "「recent」を名詞の前に置く方が自然です。/ 將形容詞「recent」放在名詞前面會更自然。"
+
 Return ONLY a valid JSON object with no extra text:
 {{
   "correct": "<one recommended natural English translation>",
   "score": <integer 0-100>,
   "errors": [
-    {{"wrong": "<the learner's problematic part>", "right": "<corrected version>", "note": "<short explanation in BOTH Japanese AND Traditional Chinese, format: 'Japanese説明。/ 中文說明。'>"}}
+    {{"wrong": "<the learner's problematic part>", "right": "<corrected version>", "note": "<Japanese explanation>。/ <Chinese explanation>。"}}
   ],
-  "feedback": "<one or two sentences of overall feedback in BOTH Japanese AND Traditional Chinese, format: 'Japanese講評。/ 中文講評。'>"
+  "feedback": "<Japanese overall feedback>。/ <Chinese overall feedback>。"
 }}
 If the translation is already perfect, return an empty "errors" array and a high score."""
     result = call_gemini_json(prompt)
